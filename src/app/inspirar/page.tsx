@@ -122,6 +122,7 @@ export default function InspirarPage() {
   const [analysisOpen, setAnalysisOpen] = useState(false)
   const [savedId, setSavedId] = useState<string | null>(null)
   const [saveWarning, setSaveWarning] = useState<string | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const { save } = useContentStorage()
 
@@ -133,6 +134,7 @@ export default function InspirarPage() {
     setPageState('analyzing')
     setLoadingMsg(0)
     setResult(null)
+    setErrorMsg(null)
 
     // Start loading animation in parallel with API call
     const animDone = (async () => {
@@ -155,14 +157,9 @@ export default function InspirarPage() {
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         if (res.status === 422) {
-          // URL couldn't be fetched — fall back to mock for URL mode
-          const { detectPlatformExtended, mockAnalyzeUrl, generateInspirationContent } =
-            await import('@/lib/mock/url-inspiration')
-          const platform: InspiredPlatform = detectPlatformExtended(trimmed) ?? 'web'
-          const analysis = mockAnalyzeUrl(trimmed, platform)
-          setResult(generateInspirationContent(analysis))
-          setPageState('done')
-          setAnalysisOpen(false)
+          // URL couldn't be read — show actionable message, no mock fallback
+          setErrorMsg(err.error ?? 'No se pudo leer este URL. Copia y pega el texto del post directamente.')
+          setPageState('error')
           return
         }
         console.error('API error:', err)
@@ -484,7 +481,7 @@ export default function InspirarPage() {
                 No se pudo leer el link
               </div>
               <div style={{ fontSize: '0.8rem', color: 'var(--smoke)', lineHeight: 1.5 }}>
-                Verifica que la URL esté completa (comienza con https://) y sea de Instagram, TikTok, Pinterest, Facebook o cualquier web.
+                {errorMsg ?? 'Verifica que la URL esté completa (comienza con https://).'}
               </div>
             </div>
           </div>

@@ -50,24 +50,59 @@ export async function POST(req: NextRequest) {
 
     let textToAnalyze = content?.trim()
 
-    // If URL provided and no text, try to fetch the URL
+    // If URL provided and no text, try to extract content
     if (!textToAnalyze && url?.trim()) {
+      const targetUrl = url.trim()
+
+      // Strategy 1: Jina AI Reader — renders JS, bypasses many social media blocks
+      // Free, no API key required. Works for Instagram, TikTok, Pinterest, web articles.
       try {
-        const res = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ContentBot/1.0)' },
-          signal: AbortSignal.timeout(8000),
+        const jinaRes = await fetch(`https://r.jina.ai/${targetUrl}`, {
+          headers: {
+            'Accept': 'text/plain',
+            'X-Return-Format': 'text',
+          },
+          signal: AbortSignal.timeout(15000),
         })
-        const html = await res.text()
-        // Strip HTML tags, collapse whitespace
-        textToAnalyze = html
-          .replace(/<script[\s\S]*?<\/script>/gi, '')
-          .replace(/<style[\s\S]*?<\/style>/gi, '')
-          .replace(/<[^>]+>/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim()
-          .slice(0, 4000)
+        if (jinaRes.ok) {
+          const text = await jinaRes.text()
+          const cleaned = text.trim().slice(0, 5000)
+          if (cleaned.length > 100) {
+            textToAnalyze = cleaned
+          }
+        }
       } catch {
-        return NextResponse.json({ error: 'No se pudo leer el URL. Pega el texto directamente.' }, { status: 422 })
+        // Jina failed — continue to strategy 2
+      }
+
+      // Strategy 2: Direct fetch + strip HTML (works for open web articles)
+      if (!textToAnalyze) {
+        try {
+          const res = await fetch(targetUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ContentBot/1.0)' },
+            signal: AbortSignal.timeout(8000),
+          })
+          const html = await res.text()
+          const stripped = html
+            .replace(/<script[\s\S]*?<\/script>/gi, '')
+            .replace(/<style[\s\S]*?<\/style>/gi, '')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 4000)
+          if (stripped.length > 100) {
+            textToAnalyze = stripped
+          }
+        } catch {
+          // Direct fetch also failed
+        }
+      }
+
+      if (!textToAnalyze) {
+        return NextResponse.json(
+          { error: 'No se pudo leer este URL. Si es un post de Instagram o TikTok, copia y pega el texto del post directamente.' },
+          { status: 422 },
+        )
       }
     }
 
