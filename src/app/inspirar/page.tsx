@@ -733,7 +733,7 @@ export default function InspirarPage() {
                 </div>
               </div>
 
-              {/* Caption */}
+              {/* Caption + Hashtags */}
               <div>
                 <Label>Caption</Label>
                 <div style={{
@@ -742,14 +742,11 @@ export default function InspirarPage() {
                   fontSize: '0.82rem', color: 'var(--ink-2)', lineHeight: 1.65, whiteSpace: 'pre-line',
                 }}>
                   {result.content.caption}
-                </div>
-              </div>
-
-              {/* Hashtags */}
-              <div>
-                <Label>Hashtags</Label>
-                <div style={{ fontSize: '0.78rem', color: 'var(--smoke)', lineHeight: 1.7 }}>
-                  {result.content.hashtags.map(h => `#${h}`).join(' ')}
+                  {result.content.hashtags.length > 0 && (
+                    <div style={{ marginTop: 10, color: 'var(--smoke)', fontSize: '0.78rem', lineHeight: 1.8 }}>
+                      {result.content.hashtags.map(h => `#${h}`).join(' ')}
+                    </div>
+                  )}
                 </div>
               </div>
 

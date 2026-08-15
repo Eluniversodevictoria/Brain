@@ -54,7 +54,7 @@ Devuelve ÚNICAMENTE este JSON (sin markdown, sin explicaciones):
     "main_text": "guion completo con la estructura concreta del original adaptada a Victoria",
     "on_screen_text": "texto breve para pantalla — diferente al main_text, puede ser la lista clave si aplica",
     "cta": "call to action de Victoria, máx 15 palabras",
-    "caption": "caption completo con saltos de línea, máx 150 palabras, 1-2 emojis naturales",
+    "caption": "caption completo con saltos de línea, máx 150 palabras, 4-6 emojis dispersos de forma natural a lo largo del texto (no solo al inicio o al final)",
     "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5", "hashtag6", "hashtag7", "hashtag8", "hashtag9", "hashtag10"],
     "visual_style": "uno de los estilos válidos de arriba",
     "visual_style_label": "descripción muy corta del estilo elegido"
