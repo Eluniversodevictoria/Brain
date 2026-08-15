@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 
-// Allow up to 45s — Apify scrapes can take 15-25s
-export const maxDuration = 45
+// Allow up to 90s — Apify (25s) + AssemblyAI transcription (up to 40s)
+export const maxDuration = 90
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -68,13 +68,47 @@ Devuelve ÚNICAMENTE este JSON (sin markdown, sin explicaciones):
 
 type ApifyResult = { text: string | null; timedOut: boolean }
 
+async function transcribeWithAssemblyAI(audioUrl: string): Promise<string | null> {
+  const key = process.env.ASSEMBLYAI_API_KEY
+  if (!key) return null
+
+  try {
+    // Submit transcription job
+    const submitRes = await fetch('https://api.assemblyai.com/v2/transcript', {
+      method: 'POST',
+      headers: { authorization: key, 'content-type': 'application/json' },
+      body: JSON.stringify({ audio_url: audioUrl, language_code: 'es' }),
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!submitRes.ok) return null
+    const { id } = await submitRes.json()
+    if (!id) return null
+
+    // Poll until complete (max 40s)
+    const deadline = Date.now() + 40000
+    while (Date.now() < deadline) {
+      await new Promise(r => setTimeout(r, 3000))
+      const pollRes = await fetch(`https://api.assemblyai.com/v2/transcript/${id}`, {
+        headers: { authorization: key },
+        signal: AbortSignal.timeout(8000),
+      })
+      if (!pollRes.ok) break
+      const data = await pollRes.json()
+      if (data.status === 'completed') return data.text ?? null
+      if (data.status === 'error') break
+    }
+  } catch { /* transcription failed — proceed with caption only */ }
+
+  return null
+}
+
 async function extractInstagram(url: string): Promise<ApifyResult> {
   const token = process.env.APIFY_API_TOKEN
   if (!token) return { text: null, timedOut: false }
 
   try {
     const res = await fetch(
-      `https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token=${token}&timeout=30`,
+      `https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token=${token}&timeout=25`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -83,7 +117,7 @@ async function extractInstagram(url: string): Promise<ApifyResult> {
           resultsType: 'posts',
           resultsLimit: 1,
         }),
-        signal: AbortSignal.timeout(35000),
+        signal: AbortSignal.timeout(30000),
       },
     )
     if (!res.ok) return { text: null, timedOut: false }
@@ -91,10 +125,16 @@ async function extractInstagram(url: string): Promise<ApifyResult> {
     const post = Array.isArray(items) ? items[0] : null
     if (!post) return { text: null, timedOut: false }
 
+    // Try to transcribe the video if available
+    const videoUrl: string | undefined = post.videoUrl
+    const transcript = videoUrl ? await transcribeWithAssemblyAI(videoUrl) : null
+
     const parts: string[] = []
     if (post.ownerUsername) parts.push(`@${post.ownerUsername}`)
-    if (post.caption) parts.push(post.caption)
-    if (post.hashtags?.length) parts.push(post.hashtags.map((h: string) => `#${h}`).join(' '))
+    if (transcript) parts.push(`TRANSCRIPCIÓN DEL VIDEO:\n${transcript}`)
+    if (post.caption) parts.push(`CAPTION:\n${post.caption}`)
+    if (!transcript && post.hashtags?.length) parts.push(post.hashtags.map((h: string) => `#${h}`).join(' '))
+
     return { text: parts.join('\n\n') || null, timedOut: false }
   } catch (err) {
     const isTimeout = err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')
