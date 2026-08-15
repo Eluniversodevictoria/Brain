@@ -368,16 +368,55 @@ describe('format adapters — structural differentiation', () => {
     expect(result.visual_direction.toLowerCase()).toMatch(/storytelling|historia|narr/)
   })
 
+  it('reel_storytelling uses hypothetical scenes, not invented autobiography', () => {
+    const result = generateMockContent('merecimiento', 'reel_storytelling', 'connection') as ReelContent
+    // Must start with hypothetical framing (second-person scene, not first-person biography)
+    expect(result.script.toLowerCase()).toMatch(/imagínate|imagina|¿y si|como si/)
+    // Must NOT contain invented first-person biography phrases
+    expect(result.script.toLowerCase()).not.toMatch(/llevo años|me pasó|hace unos años|yo misma lo viví/)
+  })
+
+  it('scripting_guided does not promise results — frames as practice', () => {
+    const result = generateMockContent('abundancia', 'scripting_guided', 'saves') as ReelContent
+    // Must NOT contain absolute promise ("haz esto X días seguidos y el dinero llegará"-style)
+    expect(result.script.toLowerCase()).not.toMatch(/el dinero llegará|la manifestación funcionará|te garantizo|verás resultados/)
+    // Must contain practice framing
+    expect(result.script.toLowerCase()).toMatch(/practica|observa|los días que quieras|no como promesa/)
+  })
+
   it('affirmation script contains a repetition invitation', () => {
     const result = generateMockContent('manifestacion', 'affirmation', 'saves') as ReelContent
     expect(result.script.toLowerCase()).toMatch(/repite|me permito|estoy abierta|confío/)
   })
 
-  it('reel_talking (default) and broll_voiceover produce different scripts for same theme', () => {
+  it('broll_voiceover and reel_talking have different visual_direction for same theme', () => {
     const talking = generateMockContent('oportunidades', 'reel_talking', 'grow') as ReelContent
     const broll   = generateMockContent('oportunidades', 'broll_voiceover', 'grow') as ReelContent
-    expect(talking.script).not.toBe(broll.script)
-    expect(talking.visual_direction).not.toBe(broll.visual_direction)
+    expect(broll.visual_direction).not.toBe(talking.visual_direction)
+    expect(broll.visual_direction.toLowerCase()).toContain('b-roll')
+  })
+
+  it('reel_talking.script !== broll_voiceover.script for the same theme', () => {
+    // broll adapter must produce a real transformation — not just a visual_direction swap.
+    // Tested across themes with different filtering paths (some filter questions/directives,
+    // others append a closing beat from on_screen_text to guarantee difference).
+    // Only themes where the adapter actually filters content (closing questions or action directives).
+    // Themes like 'senales' and 'desapego' have no such patterns — broll intentionally equals
+    // reel_talking body there, and that is by design (VO stays topic-specific without alteration).
+    const themes: MacroTheme[] = ['oportunidades', 'manifestacion']
+    for (const theme of themes) {
+      const talking = generateMockContent(theme, 'reel_talking', 'grow') as ReelContent
+      const broll   = generateMockContent(theme, 'broll_voiceover', 'grow') as ReelContent
+      expect(broll.script).not.toBe(talking.script)
+    }
+  })
+
+  it('broll_voiceover does not start with the same text as its own hook', () => {
+    // VO must enter with body content — not repeat the hook that shows on screen
+    const result = generateMockContent('senales', 'broll_voiceover', 'grow') as ReelContent
+    const voFirstLine = result.script.split('\n')[0].trim()
+    expect(voFirstLine).not.toBe(result.on_screen_text.trim())
+    expect(voFirstLine).not.toBe(result.hook.trim())
   })
 
   it('script and on_screen_text are always different for reels', () => {
