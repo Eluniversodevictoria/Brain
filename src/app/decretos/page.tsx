@@ -9,6 +9,7 @@ const DECRETOS = [
   'Yo soy multiplicación',
   'Yo soy bendición',
   'Yo soy perfección',
+  'Yo soy amor',
 ]
 
 type State = 'idle' | 'loading' | 'done' | 'error'
@@ -45,7 +46,7 @@ export default function DecretosPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#FDF6EE',
+      background: '#FFFFFF',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -59,25 +60,25 @@ export default function DecretosPage() {
         {/* Brand */}
         <p style={{
           fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase',
-          color: '#C49A5A', margin: '0 0 20px', textAlign: 'center',
+          color: '#C47B8A', margin: '0 0 20px', textAlign: 'center',
         }}>
           El Universo de Victoria
         </p>
 
         {/* Ornament */}
-        <div style={{ textAlign: 'center', fontSize: 22, color: '#C49A5A', marginBottom: 16 }}>✦</div>
+        <div style={{ textAlign: 'center', fontSize: 22, color: '#C47B8A', marginBottom: 16 }}>✦</div>
 
         {/* Title */}
         <h1 style={{
           fontSize: 'clamp(26px, 5vw, 38px)', fontWeight: 'normal',
-          color: '#2C1F10', textAlign: 'center', margin: '0 0 8px', lineHeight: 1.25,
+          color: '#1C1C1C', textAlign: 'center', margin: '0 0 8px', lineHeight: 1.25,
         }}>
-          Los 6 Decretos<br />
+          Los 7 Decretos<br />
           <em>de Abundancia</em>
         </h1>
 
         <p style={{
-          fontSize: 13, color: '#C49A5A', textAlign: 'center',
+          fontSize: 13, color: '#C47B8A', textAlign: 'center',
           letterSpacing: '0.06em', margin: '0 0 28px',
         }}>
           Método Conny Méndez · PDF gratuito
@@ -85,14 +86,14 @@ export default function DecretosPage() {
 
         {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
-          <div style={{ flex: 1, height: 1, background: '#E8D5B0' }} />
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C49A5A' }} />
-          <div style={{ flex: 1, height: 1, background: '#E8D5B0' }} />
+          <div style={{ flex: 1, height: 1, background: '#F2C4CE' }} />
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C47B8A' }} />
+          <div style={{ flex: 1, height: 1, background: '#F2C4CE' }} />
         </div>
 
         {/* Quote */}
         <p style={{
-          fontStyle: 'italic', fontSize: 16, color: '#5C4530',
+          fontStyle: 'italic', fontSize: 16, color: '#4A3040',
           textAlign: 'center', lineHeight: 1.6, margin: '0 0 28px',
         }}>
           "Todo lo que se bendice, aumenta."
@@ -100,7 +101,7 @@ export default function DecretosPage() {
 
         {/* Description */}
         <p style={{
-          fontSize: 14, color: '#5C4530', textAlign: 'center',
+          fontSize: 14, color: '#5C4050', textAlign: 'center',
           lineHeight: 1.75, margin: '0 0 28px',
         }}>
           Si tu relación con el dinero es desde la tensión, la espera,
@@ -110,12 +111,13 @@ export default function DecretosPage() {
 
         {/* Decretos preview */}
         <div style={{
-          background: '#F0DEB8', borderRadius: 12,
+          background: '#FFF0F3', borderRadius: 12,
           padding: '20px 24px', marginBottom: 32,
+          border: '1px solid #F2C4CE',
         }}>
           <p style={{
             fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase',
-            color: '#C49A5A', margin: '0 0 14px', textAlign: 'center',
+            color: '#C47B8A', margin: '0 0 14px', textAlign: 'center',
           }}>
             Lo que encontrarás dentro
           </p>
@@ -124,19 +126,19 @@ export default function DecretosPage() {
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span style={{
                   width: 22, height: 22, borderRadius: '50%',
-                  background: '#C49A5A', color: '#FDF6EE',
+                  background: '#C47B8A', color: '#FFFFFF',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 10, fontWeight: 700, flexShrink: 0,
                   fontFamily: 'Helvetica, Arial, sans-serif',
                 }}>
                   {i + 1}
                 </span>
-                <span style={{ fontSize: 15, color: '#2C1F10', fontStyle: 'italic' }}>{d}</span>
+                <span style={{ fontSize: 15, color: '#1C1C1C', fontStyle: 'italic' }}>{d}</span>
               </div>
             ))}
           </div>
           <p style={{
-            fontSize: 12, color: '#5C4530', textAlign: 'center',
+            fontSize: 12, color: '#5C4050', textAlign: 'center',
             margin: '16px 0 0', fontFamily: 'Helvetica, Arial, sans-serif',
           }}>
             + guía de cuándo usarlos · + práctica de 7 días
@@ -146,14 +148,14 @@ export default function DecretosPage() {
         {/* Form or success */}
         {state === 'done' ? (
           <div style={{
-            background: '#F0DEB8', border: '1px solid #C49A5A',
+            background: '#FFF0F3', border: '1px solid #C47B8A',
             borderRadius: 12, padding: '28px 24px', textAlign: 'center',
           }}>
             <div style={{ fontSize: 28, marginBottom: 12 }}>🤍</div>
-            <p style={{ fontSize: 17, color: '#2C1F10', margin: '0 0 8px' }}>
+            <p style={{ fontSize: 17, color: '#1C1C1C', margin: '0 0 8px' }}>
               ¡Ya está en camino!
             </p>
-            <p style={{ fontSize: 13, color: '#5C4530', margin: 0, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 13, color: '#5C4050', margin: 0, lineHeight: 1.6 }}>
               Revisa tu bandeja de entrada — y también el spam,
               por si acaso. El PDF llega adjunto.
             </p>
@@ -161,7 +163,7 @@ export default function DecretosPage() {
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <label style={{
-              fontSize: 12, color: '#5C4530', letterSpacing: '0.08em',
+              fontSize: 12, color: '#5C4050', letterSpacing: '0.08em',
               textTransform: 'uppercase', fontFamily: 'Helvetica, Arial, sans-serif',
             }}>
               Tu email
@@ -176,13 +178,13 @@ export default function DecretosPage() {
               style={{
                 width: '100%', boxSizing: 'border-box',
                 padding: '14px 16px', fontSize: 15,
-                border: '1px solid #D4B896', borderRadius: 8,
-                background: '#FFFAF4', color: '#2C1F10',
+                border: '1px solid #F2C4CE', borderRadius: 8,
+                background: '#FFFFFF', color: '#1C1C1C',
                 outline: 'none', fontFamily: 'Georgia, serif',
                 transition: 'border-color 150ms',
               }}
-              onFocus={e => { e.currentTarget.style.borderColor = '#C49A5A' }}
-              onBlur={e => { e.currentTarget.style.borderColor = '#D4B896' }}
+              onFocus={e => { e.currentTarget.style.borderColor = '#C47B8A' }}
+              onBlur={e => { e.currentTarget.style.borderColor = '#F2C4CE' }}
             />
             {state === 'error' && (
               <p style={{ fontSize: 13, color: '#B94040', margin: 0, fontFamily: 'Helvetica, Arial, sans-serif' }}>
@@ -194,8 +196,8 @@ export default function DecretosPage() {
               disabled={state === 'loading' || !email.trim()}
               style={{
                 width: '100%', padding: '15px', fontSize: 15,
-                background: state === 'loading' ? '#D4B896' : '#C49A5A',
-                color: '#FDF6EE', border: 'none', borderRadius: 8,
+                background: state === 'loading' ? '#E0A0AE' : '#C47B8A',
+                color: '#FFFFFF', border: 'none', borderRadius: 8,
                 cursor: state === 'loading' ? 'default' : 'pointer',
                 fontFamily: 'Georgia, serif', fontStyle: 'italic',
                 letterSpacing: '0.02em', transition: 'background 150ms',
@@ -204,7 +206,7 @@ export default function DecretosPage() {
               {state === 'loading' ? 'Enviando...' : 'Enviarme el PDF gratis →'}
             </button>
             <p style={{
-              fontSize: 11, color: '#9C7A55', textAlign: 'center', margin: 0,
+              fontSize: 11, color: '#9C7A85', textAlign: 'center', margin: 0,
               fontFamily: 'Helvetica, Arial, sans-serif', lineHeight: 1.5,
             }}>
               Sin spam. Solo tu PDF. Puedes darte de baja cuando quieras.
@@ -215,12 +217,12 @@ export default function DecretosPage() {
         {/* Footer */}
         <div style={{ marginTop: 40, textAlign: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <div style={{ flex: 1, height: 1, background: '#E8D5B0' }} />
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C49A5A' }} />
-            <div style={{ flex: 1, height: 1, background: '#E8D5B0' }} />
+            <div style={{ flex: 1, height: 1, background: '#F2C4CE' }} />
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C47B8A' }} />
+            <div style={{ flex: 1, height: 1, background: '#F2C4CE' }} />
           </div>
           <p style={{
-            fontSize: 12, color: '#9C7A55', margin: 0,
+            fontSize: 12, color: '#9C7A85', margin: 0,
             fontFamily: 'Helvetica, Arial, sans-serif',
           }}>
             @eluniversodevictoria
