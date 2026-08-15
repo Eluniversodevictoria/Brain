@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     // Send email with PDF attached
     const { error: emailError } = await resend.emails.send({
-      from: 'El Universo de Victoria <hola@eluniversodevictoria.com>',
+      from: 'El Universo de Victoria <onboarding@resend.dev>',
       to: email,
       subject: '✨ Tus 6 Decretos de Abundancia',
       html: `
