@@ -300,6 +300,12 @@ export const OBJECTIVE_LABELS: Record<ContentObjective, string> = {
   sell: 'Vender',
 }
 
+export const MACRO_THEMES: MacroTheme[] = [
+  'manifestacion', 'dinero', 'abundancia', 'suerte', 'oportunidades',
+  'rituales', 'senales', 'numeros_fechas', 'deseos_concretos',
+  'creencias', 'merecimiento', 'desapego', 'amor_relaciones',
+]
+
 export const THEME_LABELS: Record<MacroTheme, string> = {
   manifestacion: 'Manifestación',
   dinero: 'Dinero',

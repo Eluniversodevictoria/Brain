@@ -23,6 +23,17 @@ const LOADING_MESSAGES = [
   'Armando tu plan de hoy...',
 ]
 
+function buildPlanSummary(posts: DailyPost[]): string {
+  const imagenes = posts.filter(p => p.content.kind === 'post').length
+  const reels    = posts.filter(p => p.content.kind === 'reel').length
+  const carousel = posts.filter(p => p.content.kind === 'carousel').length
+  const parts: string[] = []
+  if (imagenes > 0) parts.push(`${imagenes} ${imagenes === 1 ? 'imagen' : 'imágenes'}`)
+  if (reels    > 0) parts.push(`${reels} ${reels === 1 ? 'reel' : 'reels'}`)
+  if (carousel > 0) parts.push(`${carousel} ${carousel === 1 ? 'carrusel' : 'carruseles'}`)
+  return parts.join(' · ')
+}
+
 const STYLE_DESC: Record<string, string> = {
   STYLE_A: 'Glass · fondo translúcido, tipografía limpia',
   STYLE_B: 'Editorial · texto grande, fondo oscuro',
@@ -97,13 +108,14 @@ function PostCard({ post, refLinks, onRefChange, onSave, savedId, saveWarning }:
   const { idea, content, kind, index } = post
   const isImage = kind === 'image'
 
+  const isReel = content.kind === 'reel'
   const mainText  = content.kind === 'post'     ? content.image_text
                   : content.kind === 'carousel' ? content.cover_text
-                  :                               content.on_screen_text
+                  :                               content.script
   const textLabel = content.kind === 'post'
     ? `Texto imagen · ${IMAGE_TEXT_LENGTH_LABELS[content.image_text_length]}`
     : content.kind === 'carousel' ? 'Portada (slide 1)'
-    : 'Guion / texto en pantalla'
+    : 'Guion / Voice Over'
 
   const hashtags = content.hashtags.map(h => `#${h}`).join(' ')
 
@@ -111,6 +123,7 @@ function PostCard({ post, refLinks, onRefChange, onSave, savedId, saveWarning }:
     `HOOK\n${idea.hook_seed}`,
     '',
     `${textLabel.toUpperCase()}\n${mainText}`,
+    ...(isReel && content.on_screen_text ? ['', `TEXTO EN PANTALLA\n${content.on_screen_text}`] : []),
     '',
     `CTA\n${content.cta}`,
   ].join('\n')
@@ -124,6 +137,7 @@ function PostCard({ post, refLinks, onRefChange, onSave, savedId, saveWarning }:
     `HOOK\n${idea.hook_seed}`,
     '',
     `${textLabel.toUpperCase()}\n${mainText}`,
+    ...(isReel && content.on_screen_text ? ['', `TEXTO EN PANTALLA\n${content.on_screen_text}`] : []),
     '',
     `CTA\n${content.cta}`,
     '',
@@ -200,7 +214,7 @@ function PostCard({ post, refLinks, onRefChange, onSave, savedId, saveWarning }:
           </div>
         </div>
 
-        {/* Main text */}
+        {/* Main text — script / voice over / image text */}
         <div>
           <Label>{textLabel}</Label>
           <div style={{
@@ -213,6 +227,22 @@ function PostCard({ post, refLinks, onRefChange, onSave, savedId, saveWarning }:
             {mainText}
           </div>
         </div>
+
+        {/* Texto en pantalla — only for reels */}
+        {isReel && content.kind === 'reel' && content.on_screen_text && (
+          <div>
+            <Label>Texto en pantalla</Label>
+            <div style={{
+              background: 'var(--gold-light)', border: '1px solid var(--gold-border)',
+              borderRadius: 10, padding: '11px 14px',
+              fontSize: '0.84rem', color: 'var(--ink)',
+              lineHeight: 1.6, whiteSpace: 'pre-line',
+              fontFamily: "'Palatino Linotype', Palatino, Georgia, serif",
+            }}>
+              {content.on_screen_text}
+            </div>
+          </div>
+        )}
 
         {/* CTA */}
         <div>
@@ -395,7 +425,7 @@ export default function PlanHoyPage() {
           Plan de hoy
         </h1>
         <p style={{ fontSize: '0.85rem', color: 'var(--smoke)', margin: 0, textTransform: 'capitalize' }}>
-          {today} · 3 imágenes + 1 reel
+          {today}{posts.length > 0 ? ` · ${buildPlanSummary(posts)}` : ''}
         </p>
       </div>
 

@@ -5,8 +5,8 @@ import {
   decideImageTextLength,
   decideVisualStyle,
 } from './generation'
-import { VISUAL_STYLE_LABELS, IMAGE_TEXT_LENGTH_LABELS } from '@/types'
-import type { VisualStyle, ReelContent, CarouselContent, PostContent, MacroTheme } from '@/types'
+import { VISUAL_STYLE_LABELS, IMAGE_TEXT_LENGTH_LABELS, MACRO_THEMES } from '@/types'
+import type { VisualStyle, ReelContent, CarouselContent, PostContent, MacroTheme, ContentFormatType } from '@/types'
 
 // ── Discriminated union: kind is always set correctly ─────────────────
 
@@ -300,6 +300,120 @@ describe('VISUAL_STYLE_LABELS inventory', () => {
     for (const key of keys) {
       expect(key).toMatch(validPattern)
     }
+  })
+})
+
+// ── All MacroThemes have dedicated REEL_PIECES (no DEFAULT_REEL fallback) ──
+
+import { REEL_PIECES } from './generation'
+
+describe('REEL_PIECES — coverage by MacroTheme', () => {
+  it('every known MacroTheme has its own entry and does not fall to DEFAULT_REEL', () => {
+    for (const theme of MACRO_THEMES) {
+      expect(REEL_PIECES[theme]).toBeDefined()
+      expect(REEL_PIECES[theme].hook).toBeTruthy()
+      expect(REEL_PIECES[theme].script).toBeTruthy()
+      expect(REEL_PIECES[theme].on_screen_text).toBeTruthy()
+    }
+  })
+
+  it('no script contains invented authority phrases', () => {
+    const BANNED = [
+      'llevo años estudiando',
+      'años de experiencia',
+      'mi certificación',
+      'cuando empecé a estudiar',
+      'desde que obtuve',
+    ]
+    for (const theme of MACRO_THEMES) {
+      const { script, hook, caption } = REEL_PIECES[theme]
+      const combined = `${script} ${hook} ${caption}`.toLowerCase()
+      for (const phrase of BANNED) {
+        expect(combined).not.toContain(phrase)
+      }
+    }
+  })
+
+  it('on_screen_text is always shorter than script', () => {
+    for (const theme of MACRO_THEMES) {
+      const { script, on_screen_text } = REEL_PIECES[theme]
+      expect(on_screen_text.length).toBeLessThan(script.length)
+    }
+  })
+})
+
+// ── Format adapters produce structurally different content ──────────
+
+describe('format adapters — structural differentiation', () => {
+  it('broll_voiceover uses b-roll direction and no on-screen presenter', () => {
+    const result = generateMockContent('senales', 'broll_voiceover', 'grow') as ReelContent
+    expect(result.script).toBeTruthy()
+    expect(result.visual_direction.toLowerCase()).toContain('b-roll')
+    // visual_direction must mention "sin planos" or "voice over" — no presenter on camera
+    expect(result.visual_direction.toLowerCase()).toMatch(/sin planos|voice over|voiceover/)
+  })
+
+  it('visualization script starts with a guided instruction', () => {
+    const result = generateMockContent('desapego', 'visualization', 'nurture') as ReelContent
+    expect(result.script.toLowerCase()).toMatch(/cierra|imagín|observa|respira/)
+  })
+
+  it('scripting_guided script contains a writing instruction', () => {
+    const result = generateMockContent('abundancia', 'scripting_guided', 'saves') as ReelContent
+    expect(result.script.toLowerCase()).toMatch(/abre|escribe|nota|papel/)
+  })
+
+  it('reel_storytelling visual_direction mentions storytelling or historia', () => {
+    const result = generateMockContent('merecimiento', 'reel_storytelling', 'connection') as ReelContent
+    expect(result.visual_direction.toLowerCase()).toMatch(/storytelling|historia|narr/)
+  })
+
+  it('affirmation script contains a repetition invitation', () => {
+    const result = generateMockContent('manifestacion', 'affirmation', 'saves') as ReelContent
+    expect(result.script.toLowerCase()).toMatch(/repite|me permito|estoy abierta|confío/)
+  })
+
+  it('reel_talking (default) and broll_voiceover produce different scripts for same theme', () => {
+    const talking = generateMockContent('oportunidades', 'reel_talking', 'grow') as ReelContent
+    const broll   = generateMockContent('oportunidades', 'broll_voiceover', 'grow') as ReelContent
+    expect(talking.script).not.toBe(broll.script)
+    expect(talking.visual_direction).not.toBe(broll.visual_direction)
+  })
+
+  it('script and on_screen_text are always different for reels', () => {
+    const formats: ContentFormatType[] = ['reel_talking', 'reel_storytelling', 'broll_voiceover', 'scripting_guided']
+    for (const format of formats) {
+      const result = generateMockContent('dinero', format, 'saves') as ReelContent
+      // on_screen_text should be shorter (not a full copy of script)
+      if (result.script.length > 0) {
+        expect(result.on_screen_text).not.toBe(result.script)
+        expect(result.on_screen_text.length).toBeLessThan(result.script.length)
+      }
+    }
+  })
+})
+
+// ── No duplicate captions/CTAs within a generated plan ─────────────
+
+describe('caption and CTA uniqueness within a plan', () => {
+  it('5 reels across different themes have unique captions', () => {
+    const themes: MacroTheme[] = ['merecimiento', 'dinero', 'oportunidades', 'senales', 'suerte']
+    const captions = themes.map(t => {
+      const r = generateMockContent(t, 'reel_talking', 'grow') as ReelContent
+      return r.caption
+    })
+    const unique = new Set(captions)
+    expect(unique.size).toBe(themes.length)
+  })
+
+  it('5 reels across different themes have unique CTAs', () => {
+    const themes: MacroTheme[] = ['merecimiento', 'dinero', 'oportunidades', 'senales', 'suerte']
+    const ctas = themes.map(t => {
+      const r = generateMockContent(t, 'reel_talking', 'grow') as ReelContent
+      return r.cta
+    })
+    const unique = new Set(ctas)
+    expect(unique.size).toBe(themes.length)
   })
 })
 

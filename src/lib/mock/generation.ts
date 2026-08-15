@@ -47,11 +47,15 @@ const OBJECTIVE_LABEL: Record<ContentObjective, string> = {
   sell:       'Venta — convertir',
 }
 
-// ── REEL DATA ───────────────────────────────────────────────────────
+// ── REEL BASE CONTENT ────────────────────────────────────────────────
+// Each theme has a full base (reel_talking format).
+// The format adapter then reshapes script / on_screen_text / visual_direction
+// for other formats without duplicating all theme text.
 
 type ReelBase = Omit<ReelContent, 'kind' | 'visual_style' | 'visual_style_label'>
 
-const REEL_PIECES: Partial<Record<MacroTheme, ReelBase>> = {
+// Full REEL_PIECES for all 13 MacroThemes — no theme should fall to DEFAULT_REEL.
+const REEL_PIECES: Record<MacroTheme, ReelBase> = {
   merecimiento: {
     strategy: {
       objective: 'Alcance — identificación masiva',
@@ -63,7 +67,7 @@ const REEL_PIECES: Partial<Record<MacroTheme, ReelBase>> = {
       angle: 'El permiso que nunca te diste para recibir',
     },
     hook: 'Nadie te va a dar lo que tú misma no consideras que mereces.',
-    script: 'Y no es metáfora. Es literal.\n\nCuando no te crees merecedora de algo — una oportunidad, un aumento, una relación sana — tu comportamiento cambia antes de que nada externo pase.\n\nDejas de pedir.\nDejas de intentar.\nTe adelantas al rechazo.\n\nY el universo — o las personas, o las circunstancias — simplemente confirman lo que ya tenías decidido.\n\nNo porque no lo mereces.\nSino porque tú decidiste que no.\n\n¿Qué estás decidiendo hoy?',
+    script: 'Y no es metáfora. Es algo que puedes observar.\n\nCuando no te crees merecedora de algo — una oportunidad, un aumento, una relación sana — tu comportamiento cambia antes de que nada externo pase.\n\nDejas de pedir.\nDejas de intentar.\nTe adelantas al rechazo.\n\nY las circunstancias simplemente confirman lo que ya tenías decidido.\n\nNo porque no lo mereces.\nSino porque tú decidiste que no.\n\n¿Qué tienes decidido hoy?',
     on_screen_text: '"Nadie te va a dar\nlo que tú misma\nno consideras\nque mereces."',
     visual_direction: 'Victoria a cámara directa. Luz cálida lateral. Pausa de 2 segundos después de la frase principal. Sin música — solo voz.',
     caption: 'Esto no es motivación — es una observación.\n\nCuando no te crees merecedora, tu comportamiento cambia antes de que algo pase externamente. Y todo confirma lo que ya decidiste.\n\n¿Qué tienes decidido sobre ti misma?\n\n💬 Cuéntame en comentarios.',
@@ -71,6 +75,7 @@ const REEL_PIECES: Partial<Record<MacroTheme, ReelBase>> = {
     hashtags: ['merecimiento', 'manifestacion', 'autoestima', 'eluniversodevictoria', 'valorpropio'],
     ai_video_prompt: 'Close-up of a woman speaking confidently to camera, warm golden hour light from the left, minimal background in warm neutral tones, soft cinematic look, natural expressions, intimate framing.',
   },
+
   dinero: {
     strategy: {
       objective: 'Guardados — contenido para volver',
@@ -81,34 +86,36 @@ const REEL_PIECES: Partial<Record<MacroTheme, ReelBase>> = {
       psychological_mechanism: 'Confesión → Reencuadre',
       angle: 'La relación emocional con el dinero antes que la estrategia financiera',
     },
-    hook: 'Tardé años en admitirme que no quería el dinero — quería el permiso de sentirme segura.',
+    hook: 'Me tomó tiempo darme cuenta de que no quería el dinero — quería el permiso de sentirme segura.',
     script: 'El número en la cuenta no era lo que buscaba.\n\nEra poder decir que sí a algo sin calcular tres veces.\nEra dejar de revisar el saldo antes de pagar.\nEra no sentir ese nudo en el estómago cada fin de mes.\n\nEl dinero era el símbolo. La seguridad era lo real.\n\nCuando lo entendí, también entendí por qué nunca "llegaba de verdad": porque lo que necesitaba resolver no era económico.\n\nEra el permiso de existir sin justificarme.\n\n¿Tú también estás buscando el permiso, no el dinero?',
     on_screen_text: '¿Y si lo que buscas\nno es el dinero\nsino el permiso\nde sentirte segura?',
     visual_direction: 'Reel storytelling. Voz baja al inicio, más segura en la conclusión. Luz íntima. Puede ser con texto en pantalla superpuesto en los puntos clave.',
-    caption: 'Me costó años admitirlo: no era el dinero. Era la seguridad.\n\nY cuando entendí la diferencia, también entendí por qué mis estrategias financieras no funcionaban solas.\n\nHabía trabajo emocional primero.\n\n💾 Guarda si esto toca algo.',
+    caption: 'No era el dinero. Era la seguridad.\n\nY cuando entendí la diferencia, también entendí por qué las estrategias financieras no funcionaban solas.\n\nHabía trabajo emocional primero.\n\n💾 Guarda si esto toca algo.',
     cta: 'Guarda este video para cuando vuelvas a creer que el problema es el dinero.',
-    hashtags: ['dinero', 'abundancia', 'relacioconeldinero', 'manifestacion', 'eluniversodevictoria'],
+    hashtags: ['dinero', 'abundancia', 'relacionconeldinero', 'manifestacion', 'eluniversodevictoria'],
     ai_video_prompt: 'Woman speaking reflectively to camera, warm intimate lighting, soft focus background, thoughtful pauses, cinematic close-up and medium shots alternating.',
   },
+
   oportunidades: {
     strategy: {
-      objective: 'Alcance + comentarios — manifestar oportunidades concretas',
+      objective: 'Alcance + comentarios',
       pain_used: 'Pido oportunidades pero no sé cómo recibirlas o reconocerlas cuando llegan',
       private_thought: '"¿Y si ya llegó la oportunidad y yo la dejé pasar sin verla?"',
       desire: 'Saber qué hacer después de manifestar para que la oportunidad pueda llegar',
-      primary_emotion: 'Acción',
-      psychological_mechanism: 'Instrucción concreta + apertura activa',
-      angle: 'Manifestar una oportunidad laboral: lo que pasa después del ritual',
+      primary_emotion: 'Apertura activa',
+      psychological_mechanism: 'Instrucción concreta + reencuadre del merecimiento',
+      angle: 'La oportunidad llega disfrazada',
     },
-    hook: 'Manifestar una oportunidad laboral no es solo pedirla — es saber qué hacer cuando llega disfrazada.',
-    script: 'Hay tres momentos en la manifestación de una oportunidad:\n\nEl primero es el que todos conocen: pedir. Escribirla, visualizarla, ponerle una intención.\n\nEl segundo es el que nadie explica: mantenerte en movimiento. Las oportunidades no llegan a quien espera. Llegan cuando hay fricción — cuando estás haciendo algo, aunque no sea perfecto.\n\nEl tercero es el más difícil: decir que sí antes de entender cómo. Las oportunidades rara vez llegan con instrucciones completas. Llegan disfrazadas de algo que parece pequeño, inconveniente, o demasiado distinto a lo que imaginaste.\n\nLa oportunidad que manifestaste ya puede estar aquí. La pregunta es si estás abierta a reconocerla.',
-    on_screen_text: 'Pedir → Moverte → Reconocerla.\nEsos son los tres pasos.',
-    visual_direction: 'Reel educativo. Texto con los 3 momentos en pantalla. Energía clara y directa. Victoria habla como alguien que explica algo que descubrió.',
+    hook: 'Hay oportunidades que no ves porque no crees que son para ti.',
+    script: 'A veces pedimos una oportunidad y esperamos que llegue exactamente como la imaginamos. Pero puede aparecer como una conversación, una idea que te da miedo intentar o una puerta que parece demasiado grande para ti.\n\nY ahí es donde entra el merecimiento: no solo en pedir algo bueno, sino en reconocer que también puede ser para ti cuando aparece.\n\nEsta semana, antes de descartar algo, pregúntate: ¿lo estoy rechazando porque no lo quiero… o porque todavía no creo que puedo tenerlo?',
+    on_screen_text: '¿Lo descartaste porque no lo quieres\no porque no crees que puedes tenerlo?',
+    visual_direction: 'Reel hablado directamente a cámara. Victoria habla despacio, con pausa antes de la pregunta final. Luz cálida.',
     caption: 'La oportunidad que manifestaste no llegará con un cartel que diga "esto es lo que pediste".\n\nLlegará disfrazada.\n\n¿Cuál es la oportunidad que estás manifestando ahora mismo?\n\n💬 Cuéntame en comentarios.',
     cta: 'Comenta: ¿qué oportunidad estás manifestando y en qué etapa estás?',
-    hashtags: ['oportunidades', 'manifestacion', 'suerte', 'trabajo', 'eluniversodevictoria'],
-    ai_video_prompt: 'Woman explaining with clear energy and directness, text overlays for three key points, warm medium lighting, engaged and confident expression, medium framing.',
+    hashtags: ['oportunidades', 'manifestacion', 'merecimiento', 'crecimientopersonal', 'eluniversodevictoria'],
+    ai_video_prompt: 'Woman speaking directly to camera, warm medium lighting, engaged and open expression, medium framing, thoughtful pace.',
   },
+
   manifestacion: {
     strategy: {
       objective: 'Comentarios',
@@ -119,8 +126,8 @@ const REEL_PIECES: Partial<Record<MacroTheme, ReelBase>> = {
       psychological_mechanism: 'Desmitificación + Reencuadre',
       angle: 'Identidad sobre técnica — el error de fondo',
     },
-    hook: 'Llevo años estudiando manifestación y el error más común no es el que crees.',
-    script: 'No es que visualices mal.\nNo es que tus afirmaciones estén en tiempo incorrecto.\nNo es que no creas "suficiente".\n\nEl error es que manifiestas desde quien quieres ser, no desde quien ya estás siendo.\n\nCuando pides desde el deseo: hay urgencia. Hay falta.\nCuando actúas desde la identidad: hay confianza. Hay presencia.\n\nUno pide.\nEl otro ya tiene.\n\n¿Desde dónde manifiestas tú?',
+    hook: 'El error más común en la manifestación no es el que crees.',
+    script: 'No es que visualices mal.\nNo es que tus afirmaciones estén en tiempo incorrecto.\nNo es que no creas "suficiente".\n\nEl error — desde la perspectiva de la manifestación — es que muchas veces pedimos desde quien queremos ser, no desde quien ya estamos siendo.\n\nCuando pides desde el deseo: hay urgencia. Hay falta.\nCuando actúas desde la identidad: hay confianza. Hay presencia.\n\nUno pide.\nEl otro ya tiene.\n\n¿Desde dónde manifiestas tú?',
     on_screen_text: 'Manifiestas desde el deseo → urgencia\nActúas desde la identidad → confianza',
     visual_direction: 'Reel educativo. Texto en pantalla sincronizado con la voz en puntos clave. Voz clara y directa. Pausa larga antes de la pregunta final.',
     caption: 'El error de la manifestación no es técnico.\n\nEs de identidad.\n\n¿Manifiestas desde quien quieres ser o desde quien ya eres?\n\n💬 Escribe tu respuesta honesta en comentarios.',
@@ -128,6 +135,7 @@ const REEL_PIECES: Partial<Record<MacroTheme, ReelBase>> = {
     hashtags: ['manifestacion', 'leyatraccion', 'crecimientopersonal', 'eluniversodevictoria'],
     ai_video_prompt: 'Woman explaining an idea directly to camera, clear and confident delivery, text overlays for key contrasts, warm studio lighting, medium shots.',
   },
+
   creencias: {
     strategy: {
       objective: 'Guardados',
@@ -138,15 +146,16 @@ const REEL_PIECES: Partial<Record<MacroTheme, ReelBase>> = {
       psychological_mechanism: 'Señal de identidad → Revelación de origen',
       angle: 'Las creencias sobre el dinero que heredaste sin elegirlas',
     },
-    hook: 'Si te has dicho "yo no soy de las que tienen eso" — necesitas ver esto.',
+    hook: 'Si te has dicho "yo no soy de las que tienen eso" — vale la pena revisar de dónde viene esa frase.',
     script: '¿De dónde vino esa frase?\n\nNo la inventaste tú. La absorbiste.\n\nDe la forma en que tu familia hablaba del dinero.\nDel tono en que se decía "ese es rico" — como si rico fuera sospechoso.\nDel mensaje implícito de que pedir demasiado era de mal gusto.\nDe ver que quien sobresalía pagaba un costo social.\n\nNunca fue una decisión consciente.\nFue una herencia.\n\nY como toda herencia: puedes examinarla, quedarte con lo que funciona y devolver el resto.',
     on_screen_text: '"Yo no soy de las que tienen eso"\n\n¿De dónde vino esa frase?',
-    visual_direction: 'Reel educativo. Texto en pantalla en los puntos de origen. Victoria habla como alguien que ya hizo este trabajo.',
+    visual_direction: 'Reel educativo. Texto en pantalla en los puntos de origen. Victoria habla de forma reflexiva, como alguien que ya hizo este trabajo.',
     caption: 'Esa frase que tienes tan normalizada no la elegiste.\n\nLa heredaste.\n\nY se puede examinar. Se puede devolver.\n\n💾 Guarda esto para cuando vuelva a aparecer.',
     cta: 'Guarda esto para cuando la voz interna vuelva a decirte que no eres "de las que tienen eso".',
     hashtags: ['creencias', 'abundancia', 'dinero', 'autoconocimiento', 'eluniversodevictoria'],
     ai_video_prompt: 'Close-up portrait, woman with knowing expression, warm natural light, minimal styling, intimate camera distance, reflective mood.',
   },
+
   abundancia: {
     strategy: {
       objective: 'Guardados — práctica para volver',
@@ -155,10 +164,10 @@ const REEL_PIECES: Partial<Record<MacroTheme, ReelBase>> = {
       desire: 'Experimentar la abundancia ahora, no como meta futura',
       primary_emotion: 'Apertura',
       psychological_mechanism: 'Scripting guiado + permiso de recibir',
-      angle: 'Scripting de abundancia en presente — las frases que cambian algo por dentro',
+      angle: 'Scripting de abundancia en presente',
     },
     hook: 'Escribe esto exactamente como te lo dicto — y date permiso de creértelo mientras escribes.',
-    script: 'Lista. Papel o notas del teléfono.\n\nEscribe:\n\n"El dinero llega a mí de formas que todavía no puedo imaginar."\n\nRespira.\n\n"Estoy abierta a recibir prosperidad en todas sus formas."\n\nRespira.\n\n"Me permito recibir sin tener que justificarlo."\n\nRespira de nuevo.\n\nEl scripting no es para el momento en que ya lo crees. Es para el momento en que estás aprendiendo a creerlo.\n\nY aprender a creerlo también es una forma de manifestar.',
+    script: 'Abre una nota o un papel.\n\nEscribe:\n\n"El dinero llega a mí de formas que todavía no puedo imaginar."\n\nRespira.\n\n"Estoy abierta a recibir prosperidad en todas sus formas."\n\nRespira.\n\n"Me permito recibir sin tener que justificarlo."\n\nEl scripting no es para el momento en que ya lo crees. Es para el momento en que estás aprendiendo a creerlo.\n\nY practicarlo también es una forma de manifestar.',
     on_screen_text: '"El dinero llega a mí\nde formas que todavía\nno puedo imaginar."',
     visual_direction: 'Reel guiado. Victoria habla despacio, con pausa entre frases. Subtítulos con las frases de scripting en pantalla. Música suave de fondo. Sin prisa.',
     caption: 'Sesión de scripting de abundancia.\n\nNo hace falta creértelo al 100% todavía.\nHace falta escribirlo como práctica.\n\n¿Qué frase te resonó? Cuéntame en comentarios.\n\n💾 Guarda para la próxima vez que quieras poner una intención.',
@@ -166,6 +175,7 @@ const REEL_PIECES: Partial<Record<MacroTheme, ReelBase>> = {
     hashtags: ['abundancia', 'scripting', 'manifestacion', 'afirmaciones', 'eluniversodevictoria'],
     ai_video_prompt: 'Woman speaking slowly and deliberately to camera, scripting phrases appearing as text overlays with pauses, soft golden light, calm peaceful atmosphere.',
   },
+
   desapego: {
     strategy: {
       objective: 'Guardados',
@@ -177,14 +187,15 @@ const REEL_PIECES: Partial<Record<MacroTheme, ReelBase>> = {
       angle: 'Soltar el control, no el deseo',
     },
     hook: '¿Y si soltar no significa que ya no te importa? ¿Y si es exactamente lo contrario?',
-    script: 'Desapego no es indiferencia.\n\nNo es decir "me da igual" cuando sí te importa.\nNo es fingir que no lo quieres.\n\nDesapego es decir: lo quiero, confío en que va a llegar, y no voy a pasarme el tiempo controlando cómo.\n\nLa diferencia no es emocional. Es de energía.\n\nCuando manifiestas con tensión — revisando señales, forzando resultados, calculando si lo mereces — la energía que sale es urgencia, no confianza.\n\nY el universo responde a lo que realmente emites.\n\nAbre la mano. No el deseo. Solo el control.',
+    script: 'Desapego no es indiferencia.\n\nNo es decir "me da igual" cuando sí te importa.\nNo es fingir que no lo quieres.\n\nDesapego — en la práctica de la manifestación — es decir: lo quiero, confío en que va a llegar, y no voy a pasarme el tiempo controlando cómo.\n\nLa diferencia no es emocional. Es de energía.\n\nCuando manifiestas con tensión — revisando señales, forzando resultados, calculando si lo mereces — la energía que sale es urgencia.\n\nAbre la mano. No el deseo. Solo el control.',
     on_screen_text: 'Desapego no es indiferencia.\nEs confiar en que ya está en camino.',
     visual_direction: 'Reel hablado íntimo. Luz cálida. Pausa significativa antes de la conclusión.',
     caption: 'Soltar no significa que ya no te importa.\n\nSignifica que ya no necesitas controlar el cómo.\n\nEsa es la diferencia entre desapego e indiferencia.\n\n💾 Guarda para cuando sientas esa tensión de querer controlar.',
-    cta: 'Guarda para cuando sientas esa tensión de querer controlar el resultado.',
+    cta: 'Guarda para cuando sientas la necesidad de controlar el resultado.',
     hashtags: ['desapego', 'manifestacion', 'confianza', 'crecimientopersonal', 'eluniversodevictoria'],
     ai_video_prompt: 'Woman speaking with calm authority, warm intimate lighting, medium close-up, deliberate pacing with meaningful pauses, serene background.',
   },
+
   amor_relaciones: {
     strategy: {
       objective: 'Guardados — práctica de scripting',
@@ -195,8 +206,8 @@ const REEL_PIECES: Partial<Record<MacroTheme, ReelBase>> = {
       psychological_mechanism: 'Scripting guiado — identidad futura',
       angle: 'El scripting de amor no describe a la persona, describe cómo te sientes tú',
     },
-    hook: 'El scripting de amor que nadie te enseña — y que cambia todo.',
-    script: 'No describes a una persona específica.\nNo describes características físicas.\n\nDescribes cómo te sientes tú.\n\nEscribe:\n"Estoy en una relación donde me siento [emoción 1], [emoción 2], [emoción 3]."\n\n"Soy libre de ser yo misma. Soy recibida. Soy elegida."\n\n"Esta relación llega a mí de formas que todavía no imagino, pero estoy abierta a reconocerla cuando llegue."\n\nEl scripting de amor no es sobre la persona.\nEs sobre la versión de ti que ya está en esa relación.',
+    hook: 'El scripting de amor que cambia el enfoque — y que nadie te explica así.',
+    script: 'No describes a una persona específica.\nNo describes características físicas.\n\nDescribes cómo te sientes tú.\n\nEscribe:\n"Estoy en una relación donde me siento libre, recibida, elegida."\n\n"Soy libre de ser yo misma. Soy recibida. Soy elegida."\n\n"Esta relación llega a mí de formas que todavía no imagino, pero estoy abierta a reconocerla cuando llegue."\n\nEl scripting de amor no es sobre la persona.\nEs sobre la versión de ti que ya está en esa relación.',
     on_screen_text: 'El scripting de amor\nno describe a la persona.\nDescribe cómo te sientes tú.',
     visual_direction: 'Reel hablado. Las frases de scripting aparecen en pantalla durante el dictado. Pausa entre cada una. Victoria habla con calma.',
     caption: 'Qué escribir exactamente cuando haces scripting para manifestar amor.\n\nLas frases más importantes no son sobre la persona — son sobre ti.\n\n💾 Guarda para tu próxima sesión de scripting.',
@@ -204,8 +215,198 @@ const REEL_PIECES: Partial<Record<MacroTheme, ReelBase>> = {
     hashtags: ['scripting', 'manifestacion', 'amor', 'journaling', 'eluniversodevictoria'],
     ai_video_prompt: 'Woman speaking warmly to camera, text scripting phrases appearing on screen with pauses, soft romantic lighting, intimate framing, deliberate pace.',
   },
+
+  suerte: {
+    strategy: {
+      objective: 'Alcance — identificación masiva',
+      pain_used: 'La suerte me pasa a otras, a mí no me llega aunque hago todo bien',
+      private_thought: '"Algunas personas tienen suerte y otras no. Yo soy de las que no."',
+      desire: 'Sentir que la suerte también puede ser para mí',
+      primary_emotion: 'Esperanza activa',
+      psychological_mechanism: 'Desmitificación + invitación a observar',
+      angle: 'La suerte como resultado de observación y disponibilidad, no de azar',
+    },
+    hook: 'Las personas con "buena suerte" no tienen algo que tú no tienes. Tienen una forma distinta de mirar.',
+    script: 'Cuando estudiamos qué hace que algunas personas parezcan tener más suerte, una cosa aparece una y otra vez: no es que les pasen más cosas buenas. Es que están más disponibles para reconocerlas cuando pasan.\n\nVen una conversación donde otros ven cortesía.\nVen una oportunidad donde otros ven inconveniencia.\nDicen que sí antes de entender el cómo completo.\n\nLa suerte puede cultivarse. No como promesa, sino como práctica: cuando te mantienes en movimiento, cuando estás abierta, cuando no descartas algo solo porque no se parece a lo que imaginabas.\n\n¿Qué estarías viendo diferente si estuvieras buscando suerte activamente?',
+    on_screen_text: 'La suerte se cultiva.\nNo es azar — es disponibilidad.',
+    visual_direction: 'Reel educativo conversacional. Victoria habla con energía tranquila. Luz cálida. Cierra con pregunta directa a cámara.',
+    caption: 'La suerte puede observarse, cultivarse, practicarse.\n\nNo como certeza — sino como forma de mirar.\n\n¿Qué verías diferente si decidieras buscarla activamente esta semana?\n\n💬 Cuéntame en comentarios.',
+    cta: 'Comenta: ¿qué estás observando diferente hoy?',
+    hashtags: ['suerte', 'manifestacion', 'oportunidades', 'crecimientopersonal', 'eluniversodevictoria'],
+    ai_video_prompt: 'Woman speaking with warm energy to camera, natural light, open expression, medium shot, conversational and direct.',
+  },
+
+  rituales: {
+    strategy: {
+      objective: 'Guardados — práctica diaria',
+      pain_used: 'No sé si mis rituales están bien hechos o si los hago por hacer',
+      private_thought: '"¿Realmente esto funciona o es solo un hábito vacío?"',
+      desire: 'Que el ritual se sienta significativo, no mecánico',
+      primary_emotion: 'Presencia',
+      psychological_mechanism: 'Reencuadre del ritual como intención consciente',
+      angle: 'El ritual como conversación consciente con tu propia energía',
+    },
+    hook: 'Un ritual no vale por lo que haces. Vale por la atención que pones mientras lo haces.',
+    script: 'No hace falta una vela específica, un día concreto o una secuencia perfecta.\n\nLo que convierte una acción en un ritual es que decides que ese momento es para poner atención. Para decir: esto es lo que quiero, y esto es cómo voy a recibirlo.\n\nPuede ser escribir tres cosas antes de dormir.\nPuede ser el café de la mañana con una intención.\nPuede ser caminar y repetir mentalmente algo que quieres consolidar.\n\nLa práctica importa. Pero lo que más importa es que estés presente mientras la haces.',
+    on_screen_text: 'Un ritual es presencia.\nNo es una secuencia perfecta.',
+    visual_direction: 'Reel íntimo. Luz tenue. Ritmo lento. Victoria puede estar hablando desde una mesa de trabajo o espacio personal.',
+    caption: 'No necesitas el ritual perfecto.\n\nNecesitas el momento de presencia donde decides qué quieres y cómo recibirlo.\n\n¿Cuál es tu ritual o práctica actual?\n\n💾 Guarda para recordar qué es lo que realmente importa.',
+    cta: 'Cuéntame en comentarios: ¿cuál es una práctica que ya tienes y podrías hacer con más intención?',
+    hashtags: ['rituales', 'manifestacion', 'habitos', 'intencion', 'eluniversodevictoria'],
+    ai_video_prompt: 'Woman speaking softly and deliberately to camera, intimate warm light, slow pace, reflective tone, close framing.',
+  },
+
+  senales: {
+    strategy: {
+      objective: 'Alcance + guardados',
+      pain_used: 'Espero señales claras y perfectas que confirmen que voy bien',
+      private_thought: '"Si fuera la señal correcta, lo sabría sin dudas. No sé si este es mi momento."',
+      desire: 'Aprender a confiar en lo que ya está llegando',
+      primary_emotion: 'Calma y apertura',
+      psychological_mechanism: 'Reencuadre + invitación a observar',
+      angle: 'Las señales no llegan con subtítulos',
+    },
+    hook: 'Puede que la señal que estás esperando no se vea como una señal.',
+    script: 'Cuando estamos esperando una respuesta, queremos algo imposible de ignorar: un número, una coincidencia perfecta, algo que nos confirme qué hacer.\n\nPero a veces la señal es mucho más sencilla. Puede ser una conversación que se repite, una idea a la que sigues volviendo o una oportunidad que aparece justo cuando estabas pensando en cambiar de dirección.\n\nNo necesitas convertir todo en una señal. Solo empieza a observar qué cosas siguen llamando tu atención.\n\nA veces la guía no es dramática. Es constante.',
+    on_screen_text: 'No necesitas más señales.\nSolo empieza a observar.',
+    visual_direction: 'Reel hablado. Voz tranquila. Luz suave. Victoria puede hablar sentada, en un ambiente relajado. Sin prisa.',
+    caption: 'Las señales no llegan con subtítulos.\n\nPero sí se repiten.\n\n¿Hay algo que sigue apareciendo en tu vida y todavía no sabes bien qué significa?\n\n💬 Cuéntame en comentarios.',
+    cta: 'Comenta: ¿qué idea o situación sigue apareciendo en tu vida últimamente?',
+    hashtags: ['senales', 'sincronias', 'manifestacion', 'intuicion', 'eluniversodevictoria'],
+    ai_video_prompt: 'Woman speaking calmly to camera, soft diffused light, relaxed intimate setting, slow deliberate pace, open gentle expression.',
+  },
+
+  numeros_fechas: {
+    strategy: {
+      objective: 'Guardados + comentarios',
+      pain_used: 'Siento que si no aprovecho la fecha o el número especial, pierdo la oportunidad',
+      private_thought: '"Hoy es 11:11 y no hice nada. ¿Perdí mi ventana?"',
+      desire: 'Que las fechas sean recordatorios motivadores, no presión',
+      primary_emotion: 'Alivio + presencia',
+      psychological_mechanism: 'Reencuadre + invitación a usar la fecha como herramienta',
+      angle: 'Las fechas como recordatorios de intención, no como ventanas que se cierran',
+    },
+    hook: 'El 11:11 no es una ventana que se cierra. Es un recordatorio de que puedes poner una intención ahora.',
+    script: 'Las fechas de intención — el 11/11, el 1/1, las lunas, los portales energéticos — no son ventanas mágicas que se cierran si no las aprovechas perfectamente.\n\nSon recordatorios. Te dicen: hoy puedes poner una intención con más conciencia que ayer.\n\nY eso es suficiente. No necesitas haber hecho el ritual correcto a la hora exacta. Solo necesitas tomarte un momento para escribir lo que quieres, con presencia real.\n\nUna cosa. Concreta. Sin prisa.\n\nEso ya es suficiente.',
+    on_screen_text: 'La fecha no hace el ritual.\nTu intención sí.',
+    visual_direction: 'Reel tranquilizador. Voz calmada. Victoria habla como quien quita presión, no como quien impone urgencia.',
+    caption: 'No perdiste el portal.\n\nLas fechas son recordatorios, no ventanas que se cierran.\n\nHoy todavía puedes escribir una intención.\n\n¿Cuál es la tuya?\n\n💬 Cuéntame en comentarios.',
+    cta: 'Comenta: ¿cuál es una intención que quieres reforzar esta semana?',
+    hashtags: ['1111', 'numerologia', 'manifestacion', 'intencion', 'eluniversodevictoria'],
+    ai_video_prompt: 'Woman speaking reassuringly to camera, calm warm light, close framing, gentle tone, no urgency in body language.',
+  },
+
+  deseos_concretos: {
+    strategy: {
+      objective: 'Guardados + comentarios',
+      pain_used: 'Pido todo al mismo tiempo y siento que nada llega',
+      private_thought: '"¿Cómo se supone que debo elegir solo una cosa si las quiero todas?"',
+      desire: 'Claridad sobre en qué enfocarse para que algo realmente avance',
+      primary_emotion: 'Claridad y dirección',
+      psychological_mechanism: 'Instrucción concreta + foco como herramienta',
+      angle: 'Elegir un deseo concreto no es renunciar a los demás',
+    },
+    hook: 'Lo que le pides al universo no puede ser vago si quieres que algo se mueva.',
+    script: 'Cuando pedimos todo al mismo tiempo, ninguna petición recibe suficiente profundidad.\n\nHay una práctica sencilla: elegir una cosa. Ponle nombre. Ponle fecha.\n\nNo porque el universo solo pueda atender una petición a la vez. Sino porque cuando tú enfocas tu energía en algo concreto, tu comportamiento también cambia. Empiezas a ver oportunidades que antes no veías. Tomas decisiones más alineadas.\n\nEnfocarte no es renunciar a las demás cosas. Es saber qué viene primero.\n\n¿Cuál es la cosa que — si llegara en los próximos 90 días — cambiaría todo lo demás?',
+    on_screen_text: 'Enfocarte no es renunciar.\nEs saber qué viene primero.',
+    visual_direction: 'Reel educativo. Victoria habla con claridad y energía tranquila. Texto en pantalla en los puntos clave.',
+    caption: 'No es que el universo no te escuche cuando pides varias cosas.\n\nEs que cuando todo es prioridad, tú misma no sabes en qué dirección moverse.\n\nUna cosa. Concreta. Con fecha.\n\n¿Cuál es la tuya?\n\n💬 Cuéntame en comentarios.',
+    cta: 'Comenta: ¿cuál es la cosa que — si llegara en 90 días — cambiaría todo lo demás?',
+    hashtags: ['deseos', 'manifestacion', 'foco', 'intencion', 'eluniversodevictoria'],
+    ai_video_prompt: 'Woman speaking with clarity and warmth to camera, direct eye contact, medium lighting, confident but approachable tone.',
+  },
 }
 
+// ── FORMAT ADAPTERS ──────────────────────────────────────────────────
+// Each adapter receives the theme's base and returns overrides for
+// script / on_screen_text / hook / visual_direction.
+// Only fields explicitly returned are replaced — everything else stays from base.
+
+type FormatOverride = Partial<Pick<ReelBase, 'script' | 'on_screen_text' | 'hook' | 'visual_direction'>>
+type FormatAdapter = (base: ReelBase) => FormatOverride
+
+const FORMAT_ADAPTERS: Partial<Record<ContentFormatType, FormatAdapter>> = {
+
+  reel_storytelling: (base) => {
+    const pain = base.strategy.pain_used
+    const desire = base.strategy.desire
+    const hook = base.hook
+    return {
+      script: `Hubo un momento en que ${pain.toLowerCase().replace(/no /,'').split('—')[0].trim()} era lo que más peso me daba.\n\nY lo que hacía era intentar resolverlo desde fuera — buscando la técnica correcta, la práctica correcta, el momento correcto.\n\nHasta que algo cambió. No de golpe. Poco a poco noté que lo que quería era ${desire.toLowerCase()}.\n\nDesde entonces trabajo distinto. No desde la urgencia — desde lo que ya soy.\n\nY eso fue lo que abrió la puerta.`,
+      visual_direction: 'Reel storytelling. Victoria narra en primera persona, pausando en los momentos de tensión. Luz íntima. Ritmo lento al inicio, más seguro al final. Puede incluir texto en pantalla en la resolución.',
+      on_screen_text: hook.split('—')[0].trim().replace(/[.?!]$/, '') + '.',
+    }
+  },
+
+  broll_voiceover: (base) => {
+    // Pure narration — no camera directions, no references to Victoria speaking on screen.
+    // Script should sound like an audio track over aesthetic footage.
+    const pain = base.strategy.pain_used.split('—')[0].toLowerCase()
+    const desire = base.strategy.desire.toLowerCase()
+    return {
+      script: `A veces ${pain} se convierte en el punto de partida de todo lo que hacemos.\n\nY sin notarlo, empezamos a movernos desde ahí. Desde la falta. Desde lo que todavía no llegó.\n\nPero hay otra forma de moverse. Desde lo que ya sabes que quieres. Desde ${desire}.\n\nNo como promesa. Como práctica.\n\nDía a día. En pequeño. Sin prisa.`,
+      visual_direction: 'B-roll aesthetic: flores, luz de ventana, journaling, café, manos escribiendo, cielo al amanecer. Texto del hook en pantalla al inicio. Voice over en todo el video. Sin planos de Victoria hablando a cámara.',
+      on_screen_text: base.hook,
+    }
+  },
+
+  affirmation: (base) => {
+    const desire = base.strategy.desire.toLowerCase()
+    return {
+      script: `Repite después de mí — y date permiso de sentirlo mientras lo dices:\n\n"Estoy abierta a recibir lo que quiero."\n\n"Me permito ${desire}."\n\n"Confío en que lo que es para mí va a llegar."`,
+      on_screen_text: `"Me permito ${desire}."`,
+      visual_direction: 'Reel de afirmación. Victoria habla despacio, con pausa entre cada frase. Texto de cada afirmación en pantalla. Música suave. Luz cálida.',
+    }
+  },
+
+  visualization: (base) => {
+    const desire = base.strategy.desire.toLowerCase()
+    const emotion = base.strategy.primary_emotion.toLowerCase()
+    return {
+      script: `Cierra los ojos si puedes.\n\nRespira despacio. Sin prisa.\n\nAhora imagínate en el momento en que ya tienes lo que quieres. No como fantasía — como algo que sientes en el cuerpo.\n\nObserva cómo te sientes. Qué hay de distinto en ti. Qué sensación es esa — la de ${emotion}, la de ${desire}.\n\nQuédate ahí unos segundos.\n\nAhora abre los ojos.\n\nEsa sensación es tu punto de partida.`,
+      on_screen_text: `Imagínate ya ahí.\n¿Qué sientes?`,
+      visual_direction: 'Visualización guiada. Victoria habla con voz tranquila y cadencia lenta. Música suave instrumental. Texto en pantalla en los momentos clave. Luz muy suave.',
+    }
+  },
+
+  scripting_guided: (base) => {
+    const desire = base.strategy.desire.toLowerCase()
+    return {
+      script: `Abre una nota o un papel.\n\nEscribe la fecha de hoy.\n\nY luego escribe:\n"Estoy disponible para ${desire}."\n\nRespira.\n\n"Lo reconoceré cuando llegue."\n\nRespira.\n\n"Confío en el proceso, aunque todavía no vea todos los pasos."\n\nNo hace falta escribir más. Con esto es suficiente.\n\nHaz esto tres días seguidos y observa qué cambia en cómo te mueves.`,
+      on_screen_text: `"Estoy disponible para ${desire}."`,
+      visual_direction: 'Scripting guiado. Victoria habla despacio. Cada frase aparece en pantalla mientras la dice. Pausa real entre instrucciones. Sin prisa.',
+    }
+  },
+
+  qa_response: (base) => {
+    const pain = base.strategy.pain_used.split('—')[0].toLowerCase()
+    return {
+      script: `Me preguntaron: ¿qué hago cuando ${pain} y siento que nada funciona?\n\nLo primero que les digo es: no lo estás haciendo mal.\n\nA veces el bloqueo no está en la práctica. Está en desde dónde practicas.\n\nSi lo haces desde la urgencia — desde la falta — lo que sale hacia afuera es tensión. Y la tensión no atrae, bloquea.\n\nEl cambio empieza cuando lo practicas desde lo que ya tienes. Desde lo que ya sabes. Desde quien ya eres.\n\n¿Eso te ayuda?`,
+      on_screen_text: `"¿Qué hago cuando nada funciona?"`,
+      visual_direction: 'Reel de respuesta directa. Victoria responde como si contestara un comentario real. Tono cercano y sin distancia. Puede haber el comentario visible al inicio en pantalla.',
+    }
+  },
+
+  pov: (base) => {
+    const pain = base.strategy.pain_used.split('—')[0].toLowerCase().replace(/^no /, '')
+    return {
+      script: `POV: llevas semanas haciendo todo lo que dicen — scripting, visualización, afirmaciones — y sigues sin ver resultados.\n\nY lo peor no es la espera. Es la duda.\n\n"¿Será que no lo estoy haciendo bien? ¿Será que no es para mí?"\n\nEsto te lo digo directo: el problema no es la práctica. Es que la estás haciendo desde quien quieres ser, no desde quien ya estás siendo.\n\nCambia eso, y cambia todo.`,
+      on_screen_text: `POV: haces todo bien\ny aun así no llega.`,
+      visual_direction: 'Formato POV. Texto de situación al inicio en pantalla. Victoria habla directo a cámara como si respondiera a esa persona. Energía directa y cercana.',
+    }
+  },
+
+  reel_visual: (base) => {
+    return {
+      script: '',
+      on_screen_text: base.hook,
+      visual_direction: 'Video aesthetic sin narración. Footage de naturaleza, luz, texturas. Frase del hook en pantalla con tipografía limpia. Música instrumental. Sin voice over ni Victoria en cámara.',
+    }
+  },
+}
+
+// ── DEFAULT REEL (technical fallback only) ──────────────────────────
+// Should never be reached for known MacroThemes — each has its own REEL_PIECES entry.
 const DEFAULT_REEL: ReelBase = {
   strategy: {
     objective: 'Conexión y alcance',
@@ -216,13 +417,13 @@ const DEFAULT_REEL: ReelBase = {
     psychological_mechanism: 'Identificación + Permiso',
     angle: 'El proceso gradual como forma válida de cambio',
   },
-  hook: '¿Y si el universo no te está ignorando — te está esperando a que te lo creas?',
-  script: 'No es que tus peticiones no lleguen.\n\nEs que cuando pides sin creértelo, la petición llega con una grieta.\n\nCon una duda al final.\nCon un "pero si soy yo, no sé".\n\nEl universo responde a lo que realmente crees, no a lo que dices.\n\nY la buena noticia: creerlo también es una práctica. No un punto de llegada.',
-  on_screen_text: '¿Y si el universo no te ignora?\n¿Y si te espera?',
+  hook: '¿Y si el cambio que buscas ya está ocurriendo?',
+  script: 'No es que las cosas no estén moviéndose.\n\nEs que a veces el cambio ocurre en un nivel que todavía no se ve.\n\nEn las decisiones pequeñas. En lo que dejas de tolerar. En lo que empiezas a pedir.\n\nAntes de buscar la prueba grande, pregúntate: ¿qué cambió en mí en los últimos meses?\n\nEso también cuenta.',
+  on_screen_text: '¿Qué cambió en ti\nen los últimos meses?',
   visual_direction: 'Reel hablado íntimo. Luz suave. Victoria habla con calma y presencia. Sin prisas.',
-  caption: 'El universo no te está ignorando.\n\nTe está esperando a que te lo creas.\n\nY creerlo también se practica. Todos los días, en pequeño.\n\n¿Qué es algo pequeño en lo que puedes empezar a creerte hoy?',
-  cta: 'Escribe en comentarios una cosa pequeña en la que hoy puedes empezar a creer.',
-  hashtags: ['manifestacion', 'autoestima', 'crecimientopersonal', 'eluniversodevictoria'],
+  caption: '¿Cuándo fue la última vez que reconociste cuánto has cambiado?\n\nEl progreso no siempre se ve desde fuera. Pero ocurre.\n\n💬 Cuéntame en comentarios: ¿qué cambió en ti este año?',
+  cta: 'Escribe en comentarios: ¿qué cambió en ti este año?',
+  hashtags: ['manifestacion', 'crecimientopersonal', 'autoconocimiento', 'eluniversodevictoria'],
   ai_video_prompt: 'Woman speaking softly to camera, golden warm light, close intimate framing, thoughtful pauses, soft background bokeh, cinematic quality.',
 }
 
@@ -245,9 +446,9 @@ const IMAGE_TEXTS: Record<MacroTheme, Record<ImageTextLength, string>> = {
     long:   'Querida yo,\n\nLa abundancia no es una meta. Ya está presente en formas que quizás no reconociste hoy.\n\nEstá en la conversación que te abrió una puerta. En el mensaje que llegó en el momento justo. En la claridad que sentiste cuando ya no lo buscabas.',
   },
   suerte: {
-    short:  'La suerte que buscas ya está en camino.',
-    medium: 'La suerte no es aleatoria. Llega cuando manifiestas algo concreto y te mantienes en movimiento.\n\nLas personas con "buena suerte" solo aprendieron a reconocerla.',
-    long:   'Querida yo,\n\nLa suerte no es algo que te pasa. Es algo que cultivas.\n\nCuando manifiestas algo específico. Cuando te mantienes en movimiento. Cuando dices que sí antes de entender el cómo.',
+    short:  'La suerte también puede cultivarse.',
+    medium: 'Las personas con "buena suerte" no tienen algo distinto.\nEstán más disponibles para reconocerla cuando aparece.\n\nLa suerte puede cultivarse.',
+    long:   'Querida yo,\n\nLa suerte no es algo que te pasa. Puede cultivarse.\n\nCuando manifiestas algo específico. Cuando te mantienes en movimiento. Cuando dices que sí antes de entender el cómo completo.',
   },
   oportunidades: {
     short:  'Hay oportunidades que no ves porque no crees que son para ti.',
@@ -255,24 +456,24 @@ const IMAGE_TEXTS: Record<MacroTheme, Record<ImageTextLength, string>> = {
     long:   'Querida yo,\n\nHay tres momentos en la manifestación de una oportunidad.\n\nPrimero: pedir algo concreto.\nSegundo: mantenerte en movimiento.\nTercero — el más difícil — decir que sí antes de entender el cómo.',
   },
   rituales: {
-    short:  'Un ritual es una conversación consciente con tu propia energía.',
-    medium: 'Un ritual no es superstición.\nEs la decisión de poner atención donde quieres que crezca.\n\n7 minutos. Una intención. Eso es suficiente.',
+    short:  'Un ritual es presencia, no una secuencia perfecta.',
+    medium: 'Un ritual no requiere condiciones perfectas.\nEs la decisión de poner atención donde quieres que crezca.\n\nSiete minutos. Una intención. Eso puede ser suficiente.',
     long:   'Querida yo,\n\nNo tienes que hacer 30 días de scripting ni rituales perfectos.\n\nSolo necesitas un momento al día en que digas: esto es lo que quiero, y esto es cómo voy a recibirlo.',
   },
   senales: {
-    short:  'El universo habla. Tú decides cuándo abrir la antena.',
+    short:  'Las señales no siempre llegan con subtítulos.',
     medium: 'Las señales no llegan con subtítulos.\nLlegan como conversaciones inesperadas, números repetidos, ideas que aparecen en el momento justo.',
     long:   'Querida yo,\n\nLa última señal que recibiste probablemente llegó disfrazada de coincidencia.\n\nUna conversación que te dejó pensando. Un número que apareció de nuevo. Una idea que llegó sola cuando más la necesitabas.',
   },
   numeros_fechas: {
     short:  'La fecha no hace el ritual. Tu intención sí.',
-    medium: 'El 11/11 no es la única ventana para manifestar.\nPero sí es un recordatorio poderoso.\n\nHoy escribe una cosa — una sola — que quieres antes de que termine el año.',
+    medium: 'El 11/11 no es la única ventana para manifestar.\nPero sí puede ser un recordatorio poderoso.\n\nHoy escribe una cosa — una sola — que quieres.',
     long:   'Querida yo,\n\nLas fechas de intención no son ventanas mágicas que se cierran si no las aprovechas perfectamente.\n\nSon recordatorios de que hoy puedes poner una intención con más conciencia que ayer.',
   },
   deseos_concretos: {
     short:  'Enfocarte no es renunciar. Es saber qué viene primero.',
-    medium: 'Lo que pides al universo no puede ser vago.\n\nCuando pides todo, no crees ninguna petición con suficiente profundidad.\nElige una cosa. Ponle nombre. Ponle fecha.',
-    long:   'Querida yo,\n\nHay un ejercicio de tres preguntas para cuando no sabes en qué deseo enfocarte.\n\n¿Cuál cambiaría todo lo demás si llegara en 90 días?\n¿Cuál llevas más tiempo evitando pedir?\n¿Cuál es la que menos te crees?',
+    medium: 'Lo que le pides al universo no puede ser vago.\n\nCuando pides todo, ninguna petición recibe suficiente profundidad.\nElige una cosa. Ponle nombre. Ponle fecha.',
+    long:   'Querida yo,\n\nHay una pregunta para cuando no sabes en qué deseo enfocarte:\n\n¿Cuál cambiaría todo lo demás si llegara en 90 días?\n\nEmpieza por ahí.',
   },
   creencias: {
     short:  '¿De dónde vino la frase "yo no soy de las que tienen eso"?',
@@ -301,7 +502,6 @@ const IMAGE_TEXTS: Record<MacroTheme, Record<ImageTextLength, string>> = {
 type CarouselBase = Omit<CarouselContent, 'kind' | 'visual_style' | 'visual_style_label'>
 
 function makeCarousel(
-  theme: MacroTheme,
   strategy: ContentStrategy,
   topic: string,
   goal: string,
@@ -329,7 +529,6 @@ function makeCarousel(
 
 const CAROUSEL_PIECES: Partial<Record<MacroTheme, CarouselBase>> = {
   creencias: makeCarousel(
-    'creencias',
     {
       objective: 'Guardados + compartidos',
       pain_used: 'Yo no soy de las que tienen eso — identidad de clase y merecimiento',
@@ -358,7 +557,6 @@ const CAROUSEL_PIECES: Partial<Record<MacroTheme, CarouselBase>> = {
   ),
 
   manifestacion: makeCarousel(
-    'manifestacion',
     {
       objective: 'Guardados — contenido de referencia',
       pain_used: 'Lo hago bien pero no funciona — no sé qué estoy haciendo mal',
@@ -386,7 +584,6 @@ const CAROUSEL_PIECES: Partial<Record<MacroTheme, CarouselBase>> = {
   ),
 
   merecimiento: makeCarousel(
-    'merecimiento',
     {
       objective: 'Guardados + conexión emocional',
       pain_used: 'Sé en teoría que merezco, pero en la práctica no actúo como si fuera verdad',
@@ -416,7 +613,6 @@ const CAROUSEL_PIECES: Partial<Record<MacroTheme, CarouselBase>> = {
 }
 
 const DEFAULT_CAROUSEL: CarouselBase = makeCarousel(
-  'manifestacion',
   {
     objective: 'Guardados + identificación masiva',
     pain_used: 'No sé cómo aplicar lo que aprendo sobre manifestación',
@@ -432,7 +628,7 @@ const DEFAULT_CAROUSEL: CarouselBase = makeCarousel(
   [
     { slide: 1, role: 'cover', text: 'Lo que nadie te dice\nsobre manifestar\nen la vida real' },
     { slide: 2, role: 'development', text: 'La manifestación no es\nun evento especial.\n\nEs una práctica diaria.' },
-    { slide: 3, role: 'development', text: 'Paso 1:\nSé específica en lo que pides.\n\nEl universo no trabaja con vaguedades.' },
+    { slide: 3, role: 'development', text: 'Paso 1:\nSé específica en lo que pides.\n\nLo vago no recibe suficiente energía.' },
     { slide: 4, role: 'development', text: 'Paso 2:\nActúa desde quien ya lo tiene.\n\nNo desde quien lo desea.' },
     { slide: 5, role: 'development', text: 'Paso 3:\nSuelta el control del cómo.\n\nNo el deseo. Solo la forma en que llega.' },
     { slide: 6, role: 'cta', text: '¿Por cuál de estos pasos empiezas hoy?\n\nCuéntamelo en comentarios.' },
@@ -444,34 +640,24 @@ const DEFAULT_CAROUSEL: CarouselBase = makeCarousel(
 )
 
 // ── DECISION LOGIC ──────────────────────────────────────────────────
-// length y visual_style se deciden mediante un sistema de pesos.
-// Las reglas son guías, no reglas absolutas — el seed genera variedad real.
-
-// ── Longitud ─────────────────────────────────────────────────────────
 
 type LengthWeights = { short: number; medium: number; long: number }
 
-// Bias de longitud — el caller (planner) lo calcula; generatePost no decide la política.
-// Cada campo se suma al peso base correspondiente antes del weighted pick.
-// Aplicado DESPUÉS del sesgo de tema. Sin campos = sin efecto.
 export type LengthBias = { short?: number; medium?: number; long?: number }
 
-// Preferencias por formato — inclinan la distribución sin fijarla.
-// La usuaria puede sobreescribir con un override manual siempre.
 const FORMAT_LENGTH_WEIGHTS: Partial<Record<ContentFormatType, LengthWeights>> = {
-  morning_practice:  { short: 5, medium: 4, long: 1 },  // preferencia short/medium
-  night_practice:    { short: 3, medium: 4, long: 3 },  // equilibrado, permite longs nocturnos
-  post:              { short: 6, medium: 3, long: 1 },  // preferencia short — frase directa, compartible
-  symbolic_object:   { short: 4, medium: 5, long: 1 },  // preferencia medium, short reducida
-  concrete_desire:   { short: 5, medium: 4, long: 1 },  // preferencia short/medium
-  signal_date:       { short: 5, medium: 4, long: 1 },  // preferencia short/medium
-  story:             { short: 6, medium: 3, long: 1 },  // preferencia short
-  affirmation:       { short: 8, medium: 2, long: 0 },  // casi siempre short
+  morning_practice:  { short: 5, medium: 4, long: 1 },
+  night_practice:    { short: 3, medium: 4, long: 3 },
+  post:              { short: 6, medium: 3, long: 1 },
+  symbolic_object:   { short: 4, medium: 5, long: 1 },
+  concrete_desire:   { short: 5, medium: 4, long: 1 },
+  signal_date:       { short: 5, medium: 4, long: 1 },
+  story:             { short: 6, medium: 3, long: 1 },
+  affirmation:       { short: 8, medium: 2, long: 0 },
   pov:               { short: 3, medium: 5, long: 2 },
   scripting_guided:  { short: 2, medium: 4, long: 4 },
 }
 
-// Sesgo por tema — modifica los pesos del formato (no los reemplaza).
 type LengthBiasDir = 'towards_long' | 'towards_short' | 'towards_medium' | 'neutral'
 const THEME_LENGTH_BIAS: Partial<Record<MacroTheme, LengthBiasDir>> = {
   merecimiento:     'towards_long',
@@ -508,9 +694,6 @@ function weightedPickLength(w: LengthWeights, seed: number): ImageTextLength {
   return 'short'
 }
 
-// seed=0 por defecto → resultado determinista sin seed externo.
-// El daily plan pasa seeds distintos por slot para generar variedad real.
-// lengthBias: bias adicional calculado por el planner (ej. underrepresentation de long).
 export function decideImageTextLength(
   theme: MacroTheme,
   format: ContentFormatType,
@@ -520,7 +703,6 @@ export function decideImageTextLength(
   const baseWeights = FORMAT_LENGTH_WEIGHTS[format] ?? { short: 5, medium: 3, long: 2 }
   const themeBias = THEME_LENGTH_BIAS[theme] ?? 'neutral'
   const weights = applyThemeBias(baseWeights, themeBias)
-  // Aplica bias externo sumando sobre los pesos ajustados por tema
   const biased: LengthWeights = {
     short:  weights.short  + (lengthBias?.short  ?? 0),
     medium: weights.medium + (lengthBias?.medium ?? 0),
@@ -528,11 +710,6 @@ export function decideImageTextLength(
   }
   return weightedPickLength(biased, seed)
 }
-
-// ── Estilo visual ─────────────────────────────────────────────────────
-// La longitud es la señal principal (2 votos por candidato).
-// El tema añade señal secundaria (1 voto). La intersección suma 3 votos.
-// Overrides de formato siguen siendo absolutos.
 
 export const STYLE_BY_LENGTH: Record<ImageTextLength, VisualStyle[]> = {
   short:  ['STYLE_A', 'STYLE_D', 'STYLE_F'],
@@ -562,13 +739,11 @@ export function decideVisualStyle(
   length: ImageTextLength,
   seed = 0,
 ): VisualStyle {
-  // Overrides absolutos de formato
   if (format === 'carousel')         return 'STYLE_D'
   if (format === 'method_steps')     return 'STYLE_C'
   if (format === 'reel_educational') return 'STYLE_C'
   if (format === 'affirmation')      return 'STYLE_A'
 
-  // Sistema de votos: longitud (2) + tema (1), intersección acumula
   const byLength = STYLE_BY_LENGTH[length]
   const byTheme  = THEME_STYLE_AFFINITY[theme] ?? []
 
@@ -584,7 +759,7 @@ export function decideVisualStyle(
   return pool[((seed % pool.length) + pool.length) % pool.length]
 }
 
-// ── GENERATORS PER KIND ─────────────────────────────────────────────
+// ── GENERATORS ─────────────────────────────────────────────────────
 
 function generateReel(
   theme: MacroTheme,
@@ -592,10 +767,14 @@ function generateReel(
   objective: ContentObjective,
 ): ReelContent {
   const base = REEL_PIECES[theme] ?? DEFAULT_REEL
+  const adapter = FORMAT_ADAPTERS[format]
+  const overrides: FormatOverride = adapter ? adapter(base) : {}
+
   const visual_style = decideVisualStyle(theme, format, 'medium')
   const result: ReelContent = {
     kind: 'reel',
     ...base,
+    ...overrides,
     strategy: {
       ...base.strategy,
       objective: OBJECTIVE_LABEL[objective] ?? base.strategy.objective,
@@ -656,8 +835,6 @@ function generatePost(
   return result
 }
 
-// ── MAIN EXPORT ─────────────────────────────────────────────────────
-
 export function generateMockContent(
   theme: MacroTheme,
   format: ContentFormatType,
@@ -669,3 +846,6 @@ export function generateMockContent(
   if (kind === 'post')     return generatePost(theme, format, objective, overrides)
   return generateReel(theme, format, objective)
 }
+
+// ── EXPORTS for plan-level duplicate detection ──────────────────────
+export { REEL_PIECES }

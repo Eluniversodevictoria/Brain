@@ -285,10 +285,12 @@ export default function InspirarPage() {
   const hook    = reelContent?.hook ?? ''
   const mainTxt = reelContent?.script ?? ''
 
+  const onScreenTxt = reelContent?.on_screen_text ?? ''
   const copyText = result ? [
     `HOOK\n${hook}`,
     '',
-    `TEXTO\n${mainTxt}`,
+    `GUION / VOICE OVER\n${mainTxt}`,
+    ...(onScreenTxt ? ['', `TEXTO EN PANTALLA\n${onScreenTxt}`] : []),
     '',
     `CTA\n${result.content.cta}`,
   ].join('\n') : ''
@@ -306,7 +308,8 @@ export default function InspirarPage() {
     '',
     `HOOK\n${hook}`,
     '',
-    `TEXTO\n${mainTxt}`,
+    `GUION / VOICE OVER\n${mainTxt}`,
+    ...(onScreenTxt ? ['', `TEXTO EN PANTALLA\n${onScreenTxt}`] : []),
     '',
     `CTA\n${result.content.cta}`,
     '',
@@ -594,9 +597,9 @@ export default function InspirarPage() {
                 </div>
               )}
 
-              {/* Texto */}
+              {/* Guion / Voice Over */}
               <div>
-                <Label>Guion / texto en pantalla</Label>
+                <Label>Guion / Voice Over</Label>
                 <div style={{
                   background: 'var(--surface-2)', border: '1px solid var(--dust)',
                   borderRadius: 10, padding: '11px 14px',
@@ -607,6 +610,22 @@ export default function InspirarPage() {
                   {mainTxt}
                 </div>
               </div>
+
+              {/* Texto en pantalla */}
+              {reelContent?.on_screen_text && (
+                <div>
+                  <Label>Texto en pantalla</Label>
+                  <div style={{
+                    background: 'var(--gold-light)', border: '1px solid var(--gold-border)',
+                    borderRadius: 10, padding: '11px 14px',
+                    fontSize: '0.84rem', color: 'var(--ink)', lineHeight: 1.6,
+                    whiteSpace: 'pre-line',
+                    fontFamily: "'Palatino Linotype', Palatino, Georgia, serif",
+                  }}>
+                    {reelContent.on_screen_text}
+                  </div>
+                </div>
+              )}
 
               {/* CTA */}
               <div>
