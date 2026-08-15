@@ -63,9 +63,11 @@ Devuelve ÚNICAMENTE este JSON (sin markdown, sin explicaciones):
 
 // ── URL extractors ────────────────────────────────────────────────────
 
-async function extractInstagram(url: string): Promise<string | null> {
+type ApifyResult = { text: string | null; timedOut: boolean }
+
+async function extractInstagram(url: string): Promise<ApifyResult> {
   const token = process.env.APIFY_API_TOKEN
-  if (!token) return null
+  if (!token) return { text: null, timedOut: false }
 
   try {
     const res = await fetch(
@@ -81,18 +83,19 @@ async function extractInstagram(url: string): Promise<string | null> {
         signal: AbortSignal.timeout(35000),
       },
     )
-    if (!res.ok) return null
+    if (!res.ok) return { text: null, timedOut: false }
     const items = await res.json()
     const post = Array.isArray(items) ? items[0] : null
-    if (!post) return null
+    if (!post) return { text: null, timedOut: false }
 
     const parts: string[] = []
     if (post.ownerUsername) parts.push(`@${post.ownerUsername}`)
     if (post.caption) parts.push(post.caption)
     if (post.hashtags?.length) parts.push(post.hashtags.map((h: string) => `#${h}`).join(' '))
-    return parts.join('\n\n') || null
-  } catch {
-    return null
+    return { text: parts.join('\n\n') || null, timedOut: false }
+  } catch (err) {
+    const isTimeout = err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')
+    return { text: null, timedOut: isTimeout }
   }
 }
 
@@ -177,16 +180,17 @@ export async function POST(req: NextRequest) {
       const targetUrl = url.trim()
 
       if (/instagram\.com/.test(targetUrl)) {
-        textToAnalyze = await extractInstagram(targetUrl)
+        const ig = await extractInstagram(targetUrl)
+        textToAnalyze = ig.text
         if (!textToAnalyze) {
           const hasToken = !!process.env.APIFY_API_TOKEN
+          const errorMsg = !hasToken
+            ? 'La integración con Instagram no está configurada aún. Pega el caption del post directamente.'
+            : ig.timedOut
+            ? 'Instagram tardó demasiado en responder. Pega el caption del reel directamente aquí abajo.'
+            : 'No se pudo leer este post de Instagram. Puede ser privado o haber expirado. Pega el caption directamente.'
           return NextResponse.json(
-            {
-              error: hasToken
-                ? 'No se pudo leer este post de Instagram. Puede ser privado o haber expirado.'
-                : 'La integración con Instagram no está configurada aún. Pega el caption del post directamente.',
-              needsCaption: true,
-            },
+            { error: errorMsg, needsCaption: true },
             { status: 422 },
           )
         }
