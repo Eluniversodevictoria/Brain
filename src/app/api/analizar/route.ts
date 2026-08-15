@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 
+// Allow up to 45s — Apify scrapes can take 15-25s
+export const maxDuration = 45
+
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 const SYSTEM = `Eres el motor de contenido de "El Universo de Victoria" — una cuenta de Instagram de una mujer de 32-36 años especializada en manifestación, autoestima, abundancia y crecimiento personal.
@@ -44,68 +47,159 @@ Devuelve ÚNICAMENTE este JSON (sin markdown, sin explicaciones):
   }
 }`
 
+// ── URL extractors ────────────────────────────────────────────────────
+
+async function extractInstagram(url: string): Promise<string | null> {
+  const token = process.env.APIFY_API_TOKEN
+  if (!token) return null
+
+  try {
+    const res = await fetch(
+      `https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token=${token}&timeout=30`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          directUrls: [url],
+          resultsType: 'posts',
+          resultsLimit: 1,
+        }),
+        signal: AbortSignal.timeout(35000),
+      },
+    )
+    if (!res.ok) return null
+    const items = await res.json()
+    const post = Array.isArray(items) ? items[0] : null
+    if (!post) return null
+
+    const parts: string[] = []
+    if (post.ownerUsername) parts.push(`@${post.ownerUsername}`)
+    if (post.caption) parts.push(post.caption)
+    if (post.hashtags?.length) parts.push(post.hashtags.map((h: string) => `#${h}`).join(' '))
+    return parts.join('\n\n') || null
+  } catch {
+    return null
+  }
+}
+
+async function extractTikTok(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`,
+      { signal: AbortSignal.timeout(8000) },
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    const parts: string[] = []
+    if (data.author_name) parts.push(`@${data.author_name}`)
+    if (data.title) parts.push(data.title)
+    return parts.join('\n\n') || null
+  } catch {
+    return null
+  }
+}
+
+async function extractPinterest(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://www.pinterest.com/oembed.json?url=${encodeURIComponent(url)}`,
+      { signal: AbortSignal.timeout(8000) },
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    const parts: string[] = []
+    if (data.author_name) parts.push(`@${data.author_name}`)
+    if (data.title) parts.push(data.title)
+    if (data.description) parts.push(data.description)
+    return parts.join('\n\n') || null
+  } catch {
+    return null
+  }
+}
+
+async function extractWeb(url: string): Promise<string | null> {
+  // Jina AI Reader — renders JS, works for most web articles
+  try {
+    const jinaRes = await fetch(`https://r.jina.ai/${url}`, {
+      headers: { 'Accept': 'text/plain', 'X-Return-Format': 'text' },
+      signal: AbortSignal.timeout(15000),
+    })
+    if (jinaRes.ok) {
+      const text = await jinaRes.text()
+      const loginWall = /log in|sign in|iniciar sesión|create an account|join instagram|inicia sesión/i.test(text)
+      if (!loginWall && text.trim().length > 100) return text.trim().slice(0, 5000)
+    }
+  } catch { /* continue */ }
+
+  // Direct fetch fallback
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ContentBot/1.0)' },
+      signal: AbortSignal.timeout(8000),
+    })
+    const html = await res.text()
+    const stripped = html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 4000)
+    if (stripped.length > 100) return stripped
+  } catch { /* failed */ }
+
+  return null
+}
+
+// ── Route ─────────────────────────────────────────────────────────────
+
 export async function POST(req: NextRequest) {
   try {
     const { content, url } = await req.json()
 
     let textToAnalyze = content?.trim()
 
-    // If URL provided and no text, try to extract content
     if (!textToAnalyze && url?.trim()) {
       const targetUrl = url.trim()
 
-      // Strategy 1: Jina AI Reader — renders JS, bypasses many open-web blocks.
-      // Not used for Instagram/TikTok/Facebook — they always return login walls.
-      const isSocialWall = /instagram\.com|tiktok\.com|vm\.tiktok\.com|facebook\.com|fb\.com/.test(targetUrl)
-
-      if (!isSocialWall) {
-        try {
-          const jinaRes = await fetch(`https://r.jina.ai/${targetUrl}`, {
-            headers: { 'Accept': 'text/plain', 'X-Return-Format': 'text' },
-            signal: AbortSignal.timeout(15000),
-          })
-          if (jinaRes.ok) {
-            const text = await jinaRes.text()
-            // Reject if Jina returned a login wall instead of real content
-            const loginWall = /log in|sign in|iniciar sesión|create an account|join instagram|inicia sesión/i.test(text)
-            if (!loginWall) {
-              const cleaned = text.trim().slice(0, 5000)
-              if (cleaned.length > 100) textToAnalyze = cleaned
-            }
-          }
-        } catch {
-          // Jina failed — continue to strategy 2
+      if (/instagram\.com/.test(targetUrl)) {
+        textToAnalyze = await extractInstagram(targetUrl)
+        if (!textToAnalyze) {
+          const hasToken = !!process.env.APIFY_API_TOKEN
+          return NextResponse.json(
+            {
+              error: hasToken
+                ? 'No se pudo leer este post de Instagram. Puede ser privado o haber expirado.'
+                : 'La integración con Instagram no está configurada aún. Pega el caption del post directamente.',
+              needsCaption: true,
+            },
+            { status: 422 },
+          )
         }
-      }
-
-      // Strategy 2: Direct fetch + strip HTML (works for open web articles)
-      if (!textToAnalyze) {
-        try {
-          const res = await fetch(targetUrl, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ContentBot/1.0)' },
-            signal: AbortSignal.timeout(8000),
-          })
-          const html = await res.text()
-          const stripped = html
-            .replace(/<script[\s\S]*?<\/script>/gi, '')
-            .replace(/<style[\s\S]*?<\/style>/gi, '')
-            .replace(/<[^>]+>/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim()
-            .slice(0, 4000)
-          if (stripped.length > 100) {
-            textToAnalyze = stripped
-          }
-        } catch {
-          // Direct fetch also failed
+      } else if (/tiktok\.com|vm\.tiktok\.com/.test(targetUrl)) {
+        textToAnalyze = await extractTikTok(targetUrl)
+        if (!textToAnalyze) {
+          return NextResponse.json(
+            { error: 'No se pudo leer este post de TikTok. Pega el texto directamente.', needsCaption: true },
+            { status: 422 },
+          )
         }
-      }
-
-      if (!textToAnalyze) {
-        const msg = isSocialWall
-          ? 'Instagram, TikTok y Facebook requieren login para leer el contenido. Pega el caption o texto del post en el campo de abajo.'
-          : 'No se pudo leer este URL. Prueba pegando el texto directamente.'
-        return NextResponse.json({ error: msg, needsCaption: isSocialWall }, { status: 422 })
+      } else if (/pinterest\.(com|es|co)/.test(targetUrl)) {
+        textToAnalyze = await extractPinterest(targetUrl)
+        if (!textToAnalyze) {
+          return NextResponse.json(
+            { error: 'No se pudo leer este pin de Pinterest. Pega el texto directamente.', needsCaption: true },
+            { status: 422 },
+          )
+        }
+      } else {
+        textToAnalyze = await extractWeb(targetUrl)
+        if (!textToAnalyze) {
+          return NextResponse.json(
+            { error: 'No se pudo leer este URL. Prueba pegando el texto directamente.', needsCaption: true },
+            { status: 422 },
+          )
+        }
       }
     }
 
