@@ -123,8 +123,74 @@ export default function InspirarPage() {
   const [savedId, setSavedId] = useState<string | null>(null)
   const [saveWarning, setSaveWarning] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [needsCaption, setNeedsCaption] = useState(false)
+  const [captionInput, setCaptionInput] = useState('')
 
   const { save } = useContentStorage()
+
+  async function handleAnalyzeCaption() {
+    if (!captionInput.trim()) return
+    // Re-use text mode with the pasted caption
+    const prev = inputMode
+    setPageState('analyzing')
+    setLoadingMsg(0)
+    setResult(null)
+    setErrorMsg(null)
+    setNeedsCaption(false)
+    try {
+      const res = await fetch('/api/analizar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: captionInput.trim() }),
+      })
+      if (!res.ok) { setPageState('error'); return }
+      const data = await res.json()
+      const wordCount = (data.content.main_text?.split(' ').length ?? 0)
+      const textLength: 'short' | 'medium' | 'long' =
+        wordCount <= 30 ? 'short' : wordCount <= 70 ? 'medium' : 'long'
+      setResult({
+        analysis: {
+          platform: prev === 'url' ? (() => {
+            const u = url.toLowerCase()
+            if (u.includes('instagram')) return 'instagram'
+            if (u.includes('tiktok')) return 'tiktok'
+            return 'web'
+          })() : 'web',
+          url: url || '',
+          creator: null,
+          format_detected: data.analysis?.estructura ?? '',
+          tema: data.analysis?.tema ?? '',
+          idea_principal: data.analysis?.idea_principal ?? '',
+          hook_original: data.analysis?.hook_original ?? '',
+          estructura: data.analysis?.estructura ? [data.analysis.estructura] : [],
+          tono: data.analysis?.tono ?? '',
+          mecanismo: data.analysis?.mecanismo ?? '',
+          macro_theme: data.content.macro_theme,
+          format: data.content.format,
+          objective: data.content.objective,
+          is_mock: false as any,
+        },
+        content: {
+          kind: 'reel',
+          strategy: { objective: '', pain_used: '', private_thought: '', desire: '', primary_emotion: '', psychological_mechanism: '', angle: '' },
+          hook: data.content.hook,
+          script: data.content.main_text,
+          on_screen_text: data.content.main_text,
+          visual_direction: '',
+          ai_video_prompt: '',
+          caption: data.content.caption,
+          cta: data.content.cta,
+          hashtags: data.content.hashtags ?? [],
+          visual_style: data.content.visual_style ?? 'STYLE_A',
+          visual_style_label: data.content.visual_style_label ?? '',
+          image_text_length: textLength,
+        } as any,
+      })
+      setPageState('done')
+    } catch {
+      setPageState('error')
+    }
+  }
 
   async function handleAnalyze() {
     const isUrl = inputMode === 'url'
@@ -135,6 +201,7 @@ export default function InspirarPage() {
     setLoadingMsg(0)
     setResult(null)
     setErrorMsg(null)
+    setNeedsCaption(false)
 
     // Start loading animation in parallel with API call
     const animDone = (async () => {
@@ -157,8 +224,8 @@ export default function InspirarPage() {
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         if (res.status === 422) {
-          // URL couldn't be read — show actionable message, no mock fallback
-          setErrorMsg(err.error ?? 'No se pudo leer este URL. Copia y pega el texto del post directamente.')
+          setErrorMsg(err.error ?? 'No se pudo leer este URL. Pega el texto directamente.')
+          setNeedsCaption(err.needsCaption === true)
           setPageState('error')
           return
         }
@@ -474,16 +541,46 @@ export default function InspirarPage() {
       {/* Error */}
       {pageState === 'error' && (
         <Card>
-          <div style={{ padding: '16px 18px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-            <AlertCircle size={16} color="var(--rose)" style={{ flexShrink: 0, marginTop: 2 }} />
-            <div>
-              <div style={{ fontSize: '0.86rem', fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>
-                No se pudo leer el link
-              </div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--smoke)', lineHeight: 1.5 }}>
-                {errorMsg ?? 'Verifica que la URL esté completa (comienza con https://).'}
+          <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <AlertCircle size={16} color="var(--rose)" style={{ flexShrink: 0, marginTop: 2 }} />
+              <div>
+                <div style={{ fontSize: '0.86rem', fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>
+                  No se pudo leer el link
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--smoke)', lineHeight: 1.5 }}>
+                  {errorMsg ?? 'Verifica que la URL esté completa (comienza con https://).'}
+                </div>
               </div>
             </div>
+            {needsCaption && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <textarea
+                  placeholder="Pega aquí el caption o texto del reel..."
+                  value={captionInput}
+                  onChange={e => setCaptionInput(e.target.value)}
+                  rows={5}
+                  style={{
+                    width: '100%', boxSizing: 'border-box', padding: '10px 12px',
+                    fontSize: '0.84rem', borderRadius: 8, border: '1px solid var(--border)',
+                    background: 'var(--surface)', color: 'var(--ink)', resize: 'vertical',
+                    fontFamily: 'inherit', lineHeight: 1.5,
+                  }}
+                />
+                <button
+                  onClick={handleAnalyzeCaption}
+                  disabled={!captionInput.trim()}
+                  style={{
+                    alignSelf: 'flex-end', padding: '8px 18px', borderRadius: 8,
+                    background: captionInput.trim() ? 'var(--gold)' : 'var(--border)',
+                    color: captionInput.trim() ? '#000' : 'var(--smoke)',
+                    border: 'none', fontSize: '0.84rem', fontWeight: 600, cursor: captionInput.trim() ? 'pointer' : 'default',
+                  }}
+                >
+                  Analizar texto
+                </button>
+              </div>
+            )}
           </div>
         </Card>
       )}

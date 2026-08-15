@@ -54,25 +54,28 @@ export async function POST(req: NextRequest) {
     if (!textToAnalyze && url?.trim()) {
       const targetUrl = url.trim()
 
-      // Strategy 1: Jina AI Reader — renders JS, bypasses many social media blocks
-      // Free, no API key required. Works for Instagram, TikTok, Pinterest, web articles.
-      try {
-        const jinaRes = await fetch(`https://r.jina.ai/${targetUrl}`, {
-          headers: {
-            'Accept': 'text/plain',
-            'X-Return-Format': 'text',
-          },
-          signal: AbortSignal.timeout(15000),
-        })
-        if (jinaRes.ok) {
-          const text = await jinaRes.text()
-          const cleaned = text.trim().slice(0, 5000)
-          if (cleaned.length > 100) {
-            textToAnalyze = cleaned
+      // Strategy 1: Jina AI Reader — renders JS, bypasses many open-web blocks.
+      // Not used for Instagram/TikTok/Facebook — they always return login walls.
+      const isSocialWall = /instagram\.com|tiktok\.com|vm\.tiktok\.com|facebook\.com|fb\.com/.test(targetUrl)
+
+      if (!isSocialWall) {
+        try {
+          const jinaRes = await fetch(`https://r.jina.ai/${targetUrl}`, {
+            headers: { 'Accept': 'text/plain', 'X-Return-Format': 'text' },
+            signal: AbortSignal.timeout(15000),
+          })
+          if (jinaRes.ok) {
+            const text = await jinaRes.text()
+            // Reject if Jina returned a login wall instead of real content
+            const loginWall = /log in|sign in|iniciar sesión|create an account|join instagram|inicia sesión/i.test(text)
+            if (!loginWall) {
+              const cleaned = text.trim().slice(0, 5000)
+              if (cleaned.length > 100) textToAnalyze = cleaned
+            }
           }
+        } catch {
+          // Jina failed — continue to strategy 2
         }
-      } catch {
-        // Jina failed — continue to strategy 2
       }
 
       // Strategy 2: Direct fetch + strip HTML (works for open web articles)
@@ -99,10 +102,10 @@ export async function POST(req: NextRequest) {
       }
 
       if (!textToAnalyze) {
-        return NextResponse.json(
-          { error: 'No se pudo leer este URL. Si es un post de Instagram o TikTok, copia y pega el texto del post directamente.' },
-          { status: 422 },
-        )
+        const msg = isSocialWall
+          ? 'Instagram, TikTok y Facebook requieren login para leer el contenido. Pega el caption o texto del post en el campo de abajo.'
+          : 'No se pudo leer este URL. Prueba pegando el texto directamente.'
+        return NextResponse.json({ error: msg, needsCaption: isSocialWall }, { status: 422 })
       }
     }
 
