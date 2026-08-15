@@ -1,26 +1,188 @@
 @import "tailwindcss";
 
+/* ── EL UNIVERSO DE VICTORIA — Design System ─────────────────────
+   Paleta: crema cálida · rose polvoso · durazno · dorado terracota
+   Inspirado en STYLE_A (glass) · STYLE_C (cute cards) · STYLE_E (emotional warmth)
+   ──────────────────────────────────────────────────────────────── */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Backgrounds */
+  --paper:      #FEF9F5;
+  --surface:    #FAF2EA;
+  --surface-2:  #F4E7DA;
+
+  /* Borders */
+  --dust:   #EAD5C5;
+  --dust-2: #D8C0AC;
+
+  /* Text */
+  --ink:     #3A2520;
+  --ink-2:   #5C3A30;
+  --smoke:   #9C7A6E;
+  --smoke-2: #BC9A8E;
+
+  /* Primary — rose-gold terracotta */
+  --gold:        #C07860;
+  --gold-light:  rgba(192, 120, 96, 0.12);
+  --gold-border: rgba(192, 120, 96, 0.28);
+
+  /* Rose — accent femenino */
+  --rose:        #D4788A;
+  --rose-light:  rgba(212, 120, 138, 0.12);
+  --rose-border: rgba(212, 120, 138, 0.28);
+
+  /* Sage — cálido */
+  --sage:        #7A9E8C;
+  --sage-light:  rgba(122, 158, 140, 0.12);
+
+  /* Blush — durazno cálido */
+  --blush:       #D89A84;
+  --blush-light: rgba(216, 154, 132, 0.14);
+
+  /* Celestial */
+  --celestial:       #9AAFC8;
+  --celestial-light: rgba(154, 175, 200, 0.12);
+
+  /* Semantic */
+  --amber:         #C07860;
+  --success:       #6A9E7C;
+  --success-light: rgba(106, 158, 124, 0.12);
+  --warning:       #A08040;
+  --warning-light: rgba(160, 128, 64, 0.12);
+
+  /* Glass — efecto translúcido para tarjetas */
+  --glass:        rgba(255, 251, 248, 0.84);
+  --glass-border: rgba(224, 196, 180, 0.48);
+  --glass-shadow: 0 4px 28px rgba(192, 120, 96, 0.10), 0 1px 4px rgba(80, 30, 20, 0.04);
+
+  /* Petal — superficie muy suave rose */
+  --petal:        #F7E4DC;
+  --petal-2:      #F0D0C4;
+
+  /* Layout */
+  --nav-w:         220px;
+  --bottom-nav-h:  64px;
+
+  /* Radii y sombras */
+  --radius-sm:   10px;
+  --radius-md:   16px;
+  --radius-lg:   22px;
+  --shadow-sm:   0 2px 10px rgba(192, 120, 96, 0.08);
+  --shadow-md:   0 4px 20px rgba(192, 120, 96, 0.10), 0 1px 4px rgba(80,30,20,.04);
+  --transition:  160ms ease;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* ── DARK MODE — noche cálida ciruela ────────────────────────── */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --paper:       #1C1018;
+    --surface:     #251620;
+    --surface-2:   #301C28;
+    --dust:        #42283A;
+    --dust-2:      #543448;
+    --ink:         #F4E8E0;
+    --ink-2:       #D8C4B8;
+    --smoke:       #B89090;
+    --smoke-2:     #907070;
+    --glass:        rgba(38, 22, 32, 0.86);
+    --glass-border: rgba(120, 70, 80, 0.38);
+    --glass-shadow: 0 4px 28px rgba(0,0,0,0.30);
+    --petal:        #3A1E28;
+    --petal-2:      #4A2030;
+    --gold-light:  rgba(192, 120, 96, 0.14);
+    --gold-border: rgba(192, 120, 96, 0.22);
+    --rose-light:  rgba(212, 120, 138, 0.14);
+    --rose-border: rgba(212, 120, 138, 0.22);
+    --sage-light:  rgba(122, 158, 140, 0.12);
+    --blush-light: rgba(216, 154, 132, 0.12);
+    --celestial-light: rgba(154, 175, 200, 0.12);
+    --success-light: rgba(106, 158, 124, 0.10);
   }
 }
 
+:root[data-theme="dark"] {
+  --paper:       #1C1018;
+  --surface:     #251620;
+  --surface-2:   #301C28;
+  --dust:        #42283A;
+  --dust-2:      #543448;
+  --ink:         #F4E8E0;
+  --ink-2:       #D8C4B8;
+  --smoke:       #B89090;
+  --smoke-2:     #907070;
+  --glass:        rgba(38, 22, 32, 0.86);
+  --glass-border: rgba(120, 70, 80, 0.38);
+  --glass-shadow: 0 4px 28px rgba(0,0,0,0.30);
+  --petal:        #3A1E28;
+  --petal-2:      #4A2030;
+  --gold-light:  rgba(192, 120, 96, 0.14);
+  --gold-border: rgba(192, 120, 96, 0.22);
+  --rose-light:  rgba(212, 120, 138, 0.14);
+  --rose-border: rgba(212, 120, 138, 0.22);
+  --sage-light:  rgba(122, 158, 140, 0.12);
+  --blush-light: rgba(216, 154, 132, 0.12);
+  --celestial-light: rgba(154, 175, 200, 0.12);
+  --success-light: rgba(106, 158, 124, 0.10);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-in { animation: fadeIn 0.35s ease forwards; }
+.animate-slide-in { animation: slideIn 0.3s ease forwards; }
+.animate-pulse-soft { animation: pulseSoft 2s ease infinite; }
+.stagger-1 { animation-delay: 0.05s; opacity: 0; }
+.stagger-2 { animation-delay: 0.1s; opacity: 0; }
+.stagger-3 { animation-delay: 0.15s; opacity: 0; }
+.stagger-4 { animation-delay: 0.2s; opacity: 0; }
+.stagger-5 { animation-delay: 0.25s; opacity: 0; }
+.stagger-6 { animation-delay: 0.3s; opacity: 0; }
+
+* { box-sizing: border-box; }
+
+html { -webkit-font-smoothing: antialiased; }
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(145deg, #FEF9F5 0%, #FBF0E8 48%, #F7E5DA 100%);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"] body) {
+    background: linear-gradient(145deg, #1C1018 0%, #221420 48%, #281620 100%);
+    background-attachment: fixed;
+  }
+}
+
+[data-theme="dark"] body {
+  background: linear-gradient(145deg, #1C1018 0%, #221420 48%, #281620 100%);
+  background-attachment: fixed;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--dust-2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--smoke-2); }
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 3px;
 }

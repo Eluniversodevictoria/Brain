@@ -1,0 +1,337 @@
+// Tests for generateMockContent — discriminated union, overrides, fallbacks, style inventory
+import { describe, it, expect } from 'vitest'
+import {
+  generateMockContent,
+  decideImageTextLength,
+  decideVisualStyle,
+} from './generation'
+import { VISUAL_STYLE_LABELS, IMAGE_TEXT_LENGTH_LABELS } from '@/types'
+import type { VisualStyle, ReelContent, CarouselContent, PostContent, MacroTheme } from '@/types'
+
+// ── Discriminated union: kind is always set correctly ─────────────────
+
+describe('kind discriminator', () => {
+  it('reel_talking returns kind=reel', () => {
+    const result = generateMockContent('manifestacion', 'reel_talking', 'grow')
+    expect(result.kind).toBe('reel')
+  })
+
+  it('carousel returns kind=carousel', () => {
+    const result = generateMockContent('creencias', 'carousel', 'saves')
+    expect(result.kind).toBe('carousel')
+  })
+
+  it('morning_practice returns kind=post', () => {
+    const result = generateMockContent('manifestacion', 'morning_practice', 'saves')
+    expect(result.kind).toBe('post')
+  })
+
+  it('post returns kind=post', () => {
+    const result = generateMockContent('rituales', 'post', 'saves')
+    expect(result.kind).toBe('post')
+  })
+
+  it('affirmation returns kind=reel (it is a reel format)', () => {
+    const result = generateMockContent('manifestacion', 'affirmation', 'saves')
+    expect(result.kind).toBe('reel')
+  })
+
+  it('reel has hook and script but no image_text or slides', () => {
+    const result = generateMockContent('dinero', 'reel_talking', 'grow') as ReelContent
+    expect(result.hook).toBeTruthy()
+    expect(result.script).toBeTruthy()
+    expect('image_text' in result).toBe(false)
+    expect('slides' in result).toBe(false)
+  })
+
+  it('carousel has slides and cover_text but no hook or image_text', () => {
+    const result = generateMockContent('creencias', 'carousel', 'saves') as CarouselContent
+    expect(result.slides.length).toBeGreaterThan(0)
+    expect(result.cover_text).toBe(result.slides[0].text)
+    expect('hook' in result).toBe(false)
+    expect('image_text' in result).toBe(false)
+  })
+
+  it('post has image_text and image_text_length but no hook or slides', () => {
+    const result = generateMockContent('rituales', 'morning_practice', 'saves') as PostContent
+    expect(result.image_text).toBeTruthy()
+    expect(result.image_text_length).toMatch(/^(short|medium|long)$/)
+    expect('hook' in result).toBe(false)
+    expect('slides' in result).toBe(false)
+  })
+})
+
+// ── Carousel invariants ────────────────────────────────────────────────
+
+const CAROUSEL_CASES: Array<Parameters<typeof generateMockContent>> = [
+  ['creencias', 'carousel', 'saves'],
+  ['manifestacion', 'carousel', 'saves'],
+  ['merecimiento', 'carousel', 'saves'],
+  ['desapego', 'carousel', 'saves'],
+]
+
+describe('carousel invariants', () => {
+  it('has between 5 and 8 slides (all mock themes)', () => {
+    for (const args of CAROUSEL_CASES) {
+      const result = generateMockContent(...args) as CarouselContent
+      expect(result.slides.length).toBeGreaterThanOrEqual(5)
+      expect(result.slides.length).toBeLessThanOrEqual(8)
+    }
+  })
+
+  it('slides[0].role === "cover" (all mock themes)', () => {
+    for (const args of CAROUSEL_CASES) {
+      const result = generateMockContent(...args) as CarouselContent
+      expect(result.slides[0].role).toBe('cover')
+    }
+  })
+
+  it('exactly one slide has role=cta', () => {
+    for (const args of CAROUSEL_CASES) {
+      const result = generateMockContent(...args) as CarouselContent
+      const ctaSlides = result.slides.filter(s => s.role === 'cta')
+      expect(ctaSlides.length).toBe(1)
+    }
+  })
+
+  it('cta slide is always the last one', () => {
+    for (const args of CAROUSEL_CASES) {
+      const result = generateMockContent(...args) as CarouselContent
+      const ctaIndex = result.slides.findIndex(s => s.role === 'cta')
+      expect(ctaIndex).toBe(result.slides.length - 1)
+    }
+  })
+
+  it('cover_text === slides[0].text (single source of truth)', () => {
+    for (const args of CAROUSEL_CASES) {
+      const result = generateMockContent(...args) as CarouselContent
+      expect(result.cover_text).toBe(result.slides[0].text)
+    }
+  })
+
+  it('contains no reel fields (hook, script, ai_video_prompt, visual_direction)', () => {
+    for (const args of CAROUSEL_CASES) {
+      const result = generateMockContent(...args) as CarouselContent
+      expect('hook' in result).toBe(false)
+      expect('script' in result).toBe(false)
+      expect('ai_video_prompt' in result).toBe(false)
+      expect('visual_direction' in result).toBe(false)
+    }
+  })
+
+  it('contains no post fields (image_text, image_text_length)', () => {
+    for (const args of CAROUSEL_CASES) {
+      const result = generateMockContent(...args) as CarouselContent
+      expect('image_text' in result).toBe(false)
+      expect('image_text_length' in result).toBe(false)
+    }
+  })
+
+  it('no final_cta_slide field — cta lives inside slides[] only', () => {
+    for (const args of CAROUSEL_CASES) {
+      const result = generateMockContent(...args) as CarouselContent
+      expect('final_cta_slide' in result).toBe(false)
+    }
+  })
+})
+
+// ── Manual overrides (post-kind only) ────────────────────────────────
+
+describe('manual override — image_text_length (kind=post formats)', () => {
+  it('uses manual length instead of auto when provided', () => {
+    const result = generateMockContent('merecimiento', 'morning_practice', 'saves', {
+      image_text_length: 'short',
+    }) as PostContent
+    expect(result.image_text_length).toBe('short')
+  })
+
+  it('manual length "short" overrides auto-long themes', () => {
+    const result = generateMockContent('merecimiento', 'post', 'saves', {
+      image_text_length: 'short',
+    }) as PostContent
+    expect(result.image_text_length).toBe('short')
+  })
+
+  it('manual style override applies to post', () => {
+    const result = generateMockContent('rituales', 'morning_practice', 'saves', {
+      visual_style: 'STYLE_F',
+    }) as PostContent
+    expect(result.visual_style).toBe('STYLE_F')
+    expect(result.visual_style_label).toBe('Dreamy Landscape')
+  })
+})
+
+// ── Auto-decision: longitud flexible con pesos ────────────────────────
+// El sistema ya no tiene reglas absolutas por tema. Verifica propiedades
+// de distribución, no valores fijos.
+
+describe('auto-decision — length via weighted distribution', () => {
+  // Formato con peso casi exclusivo hacia short (weights: {short:8, medium:2, long:0})
+  it('affirmation strongly prefers short (seed 0–9)', () => {
+    const results = Array.from({ length: 10 }, (_, s) =>
+      decideImageTextLength('manifestacion', 'affirmation', s)
+    )
+    const shortCount = results.filter(r => r === 'short').length
+    expect(shortCount).toBeGreaterThanOrEqual(7) // ≥70% short
+    expect(results.every(r => r !== 'long')).toBe(true) // long weight = 0
+  })
+
+  // story también tiene fuerte preferencia por short
+  it('story strongly prefers short over long (seed 0–9)', () => {
+    const results = Array.from({ length: 10 }, (_, s) =>
+      decideImageTextLength('manifestacion', 'story', s)
+    )
+    const longCount = results.filter(r => r === 'long').length
+    expect(longCount).toBeLessThanOrEqual(1) // long weight muy bajo
+  })
+
+  // merecimiento + post: sesgo towards_long — long debe ser más frecuente que sin sesgo
+  it('merecimiento with towards_long bias produces more long than post default', () => {
+    const withBias    = Array.from({ length: 10 }, (_, s) => decideImageTextLength('merecimiento', 'post', s))
+    const withoutBias = Array.from({ length: 10 }, (_, s) => decideImageTextLength('manifestacion', 'post', s))
+    const longWithBias    = withBias.filter(r => r === 'long').length
+    const longWithoutBias = withoutBias.filter(r => r === 'long').length
+    expect(longWithBias).toBeGreaterThanOrEqual(longWithoutBias)
+  })
+
+  // merecimiento puede producir short (NO es siempre long)
+  it('merecimiento can produce short (not deterministically long)', () => {
+    const results = Array.from({ length: 20 }, (_, s) =>
+      decideImageTextLength('merecimiento', 'post', s)
+    )
+    expect(results.includes('short')).toBe(true)
+    expect(results.includes('long')).toBe(true)
+  })
+
+  // night_practice prefiere medium/long — short debe ser minoría
+  it('night_practice prefers medium/long over short', () => {
+    const results = Array.from({ length: 10 }, (_, s) =>
+      decideImageTextLength('manifestacion', 'night_practice', s)
+    )
+    const shortCount = results.filter(r => r === 'short').length
+    expect(shortCount).toBeLessThanOrEqual(3)
+  })
+
+  // El resultado varía con semillas distintas (no es determinista fijo)
+  it('different seeds produce different lengths for the same theme+format', () => {
+    const results = new Set(
+      Array.from({ length: 10 }, (_, s) => decideImageTextLength('dinero', 'post', s))
+    )
+    expect(results.size).toBeGreaterThanOrEqual(2)
+  })
+})
+
+// ── Auto-decision: estilo visual ──────────────────────────────────────
+
+describe('auto-decision — visual style', () => {
+  // Overrides absolutos de formato siguen igual
+  it('reel_educational and method_steps always return STYLE_C', () => {
+    expect(decideVisualStyle('manifestacion', 'reel_educational', 'medium')).toBe('STYLE_C')
+    expect(decideVisualStyle('dinero', 'method_steps', 'medium')).toBe('STYLE_C')
+  })
+
+  it('affirmation always returns STYLE_A regardless of theme', () => {
+    expect(decideVisualStyle('desapego', 'affirmation', 'short')).toBe('STYLE_A')
+    expect(decideVisualStyle('merecimiento', 'affirmation', 'short')).toBe('STYLE_A')
+  })
+
+  it('carousel always returns STYLE_D', () => {
+    expect(decideVisualStyle('creencias', 'carousel', 'medium')).toBe('STYLE_D')
+  })
+
+  // Para formatos post, la longitud domina la selección
+  it('long posts never return STYLE_C or STYLE_F (not in STYLE_BY_LENGTH.long)', () => {
+    const themes: MacroTheme[] = ['manifestacion', 'dinero', 'merecimiento', 'desapego']
+    for (const theme of themes) {
+      for (let seed = 0; seed < 10; seed++) {
+        const style = decideVisualStyle(theme, 'post', 'long', seed)
+        expect(style).not.toBe('STYLE_C')
+        expect(style).not.toBe('STYLE_F')
+      }
+    }
+  })
+
+  it('short posts never return STYLE_E (not in STYLE_BY_LENGTH.short or affinity for most themes)', () => {
+    // STYLE_E solo aparece en affinidad de desapego/amor_relaciones, no en short length candidates
+    // Para temas sin afinidad con STYLE_E, short nunca lo produce
+    const noAffinity: MacroTheme[] = ['manifestacion', 'dinero', 'abundancia', 'rituales']
+    for (const theme of noAffinity) {
+      for (let seed = 0; seed < 10; seed++) {
+        const style = decideVisualStyle(theme, 'post', 'short', seed)
+        expect(style).not.toBe('STYLE_E')
+      }
+    }
+  })
+
+  // Con seeds distintas el estilo varía para post (no es determinista fijo por tema)
+  it('visual style varies with different seeds for the same theme+format+length', () => {
+    const results = new Set(
+      Array.from({ length: 10 }, (_, s) => decideVisualStyle('manifestacion', 'post', 'short', s))
+    )
+    expect(results.size).toBeGreaterThanOrEqual(2)
+  })
+})
+
+// ── Style inventory: exactly STYLE_A–STYLE_F with correct names ───────
+
+describe('VISUAL_STYLE_LABELS inventory', () => {
+  const EXPECTED: Record<VisualStyle, string> = {
+    STYLE_A: 'Victoria Glass Message',
+    STYLE_B: 'Editorial Highlight',
+    STYLE_C: 'Cute Reminder Cards',
+    STYLE_D: 'Cozy Dark Overlay',
+    STYLE_E: 'Emotional Lifestyle Letter',
+    STYLE_F: 'Dreamy Landscape',
+  }
+
+  it('has exactly 6 styles', () => {
+    expect(Object.keys(VISUAL_STYLE_LABELS).length).toBe(6)
+  })
+
+  it('each style has the correct name', () => {
+    for (const [key, label] of Object.entries(EXPECTED)) {
+      expect(VISUAL_STYLE_LABELS[key as VisualStyle]).toBe(label)
+    }
+  })
+
+  it('no styles outside STYLE_A–STYLE_F exist', () => {
+    const keys = Object.keys(VISUAL_STYLE_LABELS)
+    const validPattern = /^STYLE_[A-F]$/
+    for (const key of keys) {
+      expect(key).toMatch(validPattern)
+    }
+  })
+})
+
+// ── IMAGE_TEXT_LENGTH_LABELS inventory ────────────────────────────────
+
+describe('IMAGE_TEXT_LENGTH_LABELS inventory', () => {
+  it('has exactly 3 lengths with correct Spanish labels', () => {
+    expect(Object.keys(IMAGE_TEXT_LENGTH_LABELS).length).toBe(3)
+    expect(IMAGE_TEXT_LENGTH_LABELS.short).toBe('Breve')
+    expect(IMAGE_TEXT_LENGTH_LABELS.medium).toBe('Media')
+    expect(IMAGE_TEXT_LENGTH_LABELS.long).toBe('Larga')
+  })
+})
+
+// ── Common fields present on all kinds ────────────────────────────────
+
+describe('common fields', () => {
+  const cases: Array<[Parameters<typeof generateMockContent>]> = [
+    [['rituales', 'reel_talking', 'authority']],
+    [['creencias', 'carousel', 'saves']],
+    [['manifestacion', 'morning_practice', 'saves']],
+  ]
+
+  for (const [[theme, format, obj]] of cases) {
+    it(`${format} has caption, cta, hashtags, visual_style, strategy`, () => {
+      const result = generateMockContent(theme, format, obj)
+      expect(result.caption).toBeTruthy()
+      expect(result.cta).toBeTruthy()
+      expect(result.hashtags.length).toBeGreaterThan(0)
+      expect(result.visual_style).toMatch(/^STYLE_[A-F]$/)
+      expect(result.visual_style_label).toBeTruthy()
+      expect(result.strategy).toBeTruthy()
+    })
+  }
+})
