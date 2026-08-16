@@ -54,12 +54,19 @@ function copyToClipboard(text: string, setCopied: (key: string) => void, key: st
 
 function CrearPageInner() {
   const searchParams = useSearchParams()
-  const hookParam = searchParams.get('hook') ?? ''
+  const hookParam    = searchParams.get('hook')   ?? ''
+  const themeParam   = searchParams.get('theme')  as MacroTheme | null
+  const formatParam  = searchParams.get('format') as ContentFormatType | null
 
-  const [step, setStep] = useState<Step>('objetivo')
+  const [step, setStep] = useState<Step>(() => {
+    // Skip to formato if theme is pre-filled; skip to resultado is not possible without objective
+    if (themeParam && formatParam) return 'formato'
+    if (themeParam) return 'tema'
+    return 'objetivo'
+  })
   const [objective, setObjective] = useState<ContentObjective | null>(null)
-  const [theme, setTheme] = useState<MacroTheme | null>(null)
-  const [format, setFormat] = useState<ContentFormatType | null>(null)
+  const [theme, setTheme]   = useState<MacroTheme | null>(themeParam)
+  const [format, setFormat] = useState<ContentFormatType | null>(formatParam)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<GeneratedContent | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -146,6 +153,32 @@ function CrearPageInner() {
           ) : undefined
         }
       />
+
+      {/* Contexto desde el Calendario */}
+      {(themeParam || formatParam) && !hookParam && (
+        <div className="rounded-xl border px-4 py-3 mb-6 flex items-start gap-3"
+          style={{ background: 'var(--celestial-light, #e8f4ff)', borderColor: 'var(--celestial, #60a5fa)' }}>
+          <span style={{ fontSize: '1rem', flexShrink: 0 }}>📅</span>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--celestial, #2563eb)' }}>
+              Idea desde el Calendario
+            </p>
+            <p className="text-sm" style={{ color: 'var(--ink)' }}>
+              {[
+                searchParams.get('date') && `${searchParams.get('date')}`,
+                searchParams.get('time') && `${searchParams.get('time')}`,
+                themeParam,
+                formatParam,
+              ].filter(Boolean).join(' · ')}
+            </p>
+            {hookParam === '' && searchParams.get('idea') && (
+              <p className="text-sm mt-1" style={{ color: 'var(--ink-2)', fontStyle: 'italic' }}>
+                {searchParams.get('idea')}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Hook desde /transformar */}
       {hookParam && (
