@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 
-// Allow up to 90s — Apify (25s) + AssemblyAI transcription (up to 40s)
-export const maxDuration = 90
+// Vercel Hobby cap = 60s. Budget: Apify 20s + AssemblyAI 20s + Claude 8s = ~48s
+export const maxDuration = 60
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -79,14 +79,14 @@ async function transcribeWithAssemblyAI(audioUrl: string): Promise<string | null
       method: 'POST',
       headers: { authorization: key, 'content-type': 'application/json' },
       body: JSON.stringify({ audio_url: audioUrl, language_code: 'es' }),
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(8000),
     })
     if (!submitRes.ok) return null
     const { id } = await submitRes.json()
     if (!id) return null
 
-    // Poll until complete (max 40s)
-    const deadline = Date.now() + 40000
+    // Poll until complete (max 20s)
+    const deadline = Date.now() + 20000
     while (Date.now() < deadline) {
       await new Promise(r => setTimeout(r, 3000))
       const pollRes = await fetch(`https://api.assemblyai.com/v2/transcript/${id}`, {
@@ -109,7 +109,7 @@ async function extractInstagram(url: string): Promise<ApifyResult> {
 
   try {
     const res = await fetch(
-      `https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token=${token}&timeout=25`,
+      `https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token=${token}&timeout=18`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -118,7 +118,7 @@ async function extractInstagram(url: string): Promise<ApifyResult> {
           resultsType: 'posts',
           resultsLimit: 1,
         }),
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(22000),
       },
     )
     if (!res.ok) return { text: null, timedOut: false }
